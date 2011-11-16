@@ -48,8 +48,10 @@ public class ExecutionHistoryServlet extends AbstractAzkabanServlet {
         /* set runtime properties from request and response*/
         super.setRuntimeProperties (req, resp);
         
+        String jobQuery = null;
         if (hasParam(req, "action")) {
-            if ("restart".equals(getParam(req, "action")) && hasParam(req, "id")) {
+            final String action = getParam(req, "action");
+            if ("restart".equals(action) && hasParam(req, "id")) {
                 try {
                     long id = Long.parseLong(getParam(req, "id"));
 
@@ -72,6 +74,12 @@ public class ExecutionHistoryServlet extends AbstractAzkabanServlet {
                 	addMessage(req, "Error restarting " + getParam(req, "id") + ". " + e.getMessage());
                 }
             }
+            /* get query term */
+            else if ("search".equals(action)) {
+                if (hasParam(req, "job")) {
+                    jobQuery = getParam(req, "job");
+                }
+            }
         }
 
         long currMaxId = allFlows.getCurrMaxId();
@@ -89,10 +97,17 @@ public class ExecutionHistoryServlet extends AbstractAzkabanServlet {
             if (holder != null)
                 flow = holder.getFlow();
 
-            if (flow != null)
-                execs.add(flow);
+            if (flow != null) {
+                if (jobQuery != null) { // filter job (flow) names by query
+                    final String regex = getRegex(jobQuery);
+                    if (flow.getName().matches(regex))
+                        execs.add(flow);
+                }
+                else {
+                    execs.add(flow);
+                }
+            }
         }
-
 
         Page page = newPage(req, resp, "azkaban/web/pages/execution_history.vm");
         page.add("executions", execs);
@@ -103,5 +118,13 @@ public class ExecutionHistoryServlet extends AbstractAzkabanServlet {
         page.add("jsonExecution", utils.getExecutableFlowJSON(execs));
         page.add("timezone", ZONE_FORMATTER.print(System.currentTimeMillis()));
         page.render();
+    }
+    
+    /*
+     * We support wildcard. This function replace query containing
+     * wildcards to regex string. 
+     */
+    private String getRegex (String query) {
+        return query.replace("*", ".*");
     }
 }
