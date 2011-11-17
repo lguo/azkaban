@@ -49,6 +49,7 @@ import azkaban.flow.Flow;
 import azkaban.flow.FlowManager;
 import azkaban.jobs.JobExecutionException;
 import azkaban.jobs.JobExecutorManager.ExecutingJobAndInstance;
+import azkaban.scheduler.ScheduledJob;
 import azkaban.util.json.JSONUtils;
 import azkaban.web.AbstractAzkabanServlet;
 
@@ -63,32 +64,83 @@ public class IndexServlet extends AbstractAzkabanServlet {
     private static final Logger logger = Logger.getLogger(IndexServlet.class.getName());
 
     private static final long serialVersionUID = 1;
-
-    @Override
+    private String jobQueryRegex = null;
+    
+        @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
             IOException {
         /* set runtime properties from request and response */
         super.setRuntimeProperties(req, resp);
 
+        final String jobQuery = ExecutingJobUtils.getJobSearch(req);
+        jobQueryRegex = jobQuery == null? null : ExecutingJobUtils.getRegex(jobQuery);
+        
         AzkabanApplication app = getApplication();
         @SuppressWarnings("unused")
         Map<String, JobDescriptor> descriptors = app.getJobManager().loadJobDescriptors();
         Page page = newPage(req, resp, "azkaban/web/pages/index.vm");
         page.add("logDir", app.getLogDirectory());
-        page.add("flows", app.getAllFlows());
-        page.add("scheduled", app.getScheduleManager().getSchedule());
-        page.add("executing", app.getJobExecutorManager().getExecutingJobs());
-        page.add("completed", app.getJobExecutorManager().getCompleted());
-        page.add("rootJobNames", app.getAllFlows().getRootFlowNames());
-        page.add("folderNames", app.getAllFlows().getFolders());
+        
+        FlowManager flowMgr = app.getAllFlows();
+        //page.add("flows", allFlows);
+        
+        List<ScheduledJob> scheduled = app.getScheduleManager().getSchedule();
+        page.add("scheduled", filterScheduled(flowMgr, scheduled, jobQueryRegex));
+        
+        Collection<ExecutingJobAndInstance> executing = app.getJobExecutorManager().getExecutingJobs();
+        Collection<ExecutingJobAndInstance> executingFiltered = filterExecuting(executing, jobQueryRegex);
+        page.add("executing", executingFiltered);
+        
+        //Multimap<String, JobExecution> completed = app.getJobExecutorManager().getCompleted();
+        //page.add("completed", completed);
+        
+        //Set<String> rootFlowNames = app.getAllFlows().getRootFlowNames();
+        //page.add("rootJobNames", rootFlowNames);
+        
+        page.add("folderNames", getFolders(flowMgr, jobQueryRegex));
+        
         page.add("jobDescComparator", JobDescriptor.NAME_COMPARATOR);
         
         ExecutingJobUtils utils = new ExecutingJobUtils();
-        page.add("jsonExecution", utils.getExecutableJobAndInstanceJSON(app.getJobExecutorManager().getExecutingJobs()));
+        page.add("jsonExecution", utils.getExecutableJobAndInstanceJSON(executingFiltered));
         page.add("timezone", ZONE_FORMATTER.print(System.currentTimeMillis()));
         page.add("currentTime",(new DateTime()).getMillis());
         page.render();
     }
+
+
+    private Collection<ExecutingJobAndInstance> filterExecuting(
+                Collection<ExecutingJobAndInstance> executing,
+                String jobQueryRegex) {
+            if (jobQueryRegex == null) return executing;
+            
+            Collection<ExecutingJobAndInstance> ret = 
+                new ArrayList<ExecutingJobAndInstance>();
+            for (ExecutingJobAndInstance job: executing) {
+                if (job.getExecutableFlow().getName().matches(jobQueryRegex)) {
+                    ret.add(job);
+                }
+            }
+            return ret;
+        }
+
+
+    private List<ScheduledJob> filterScheduled(FlowManager manager, 
+            List<ScheduledJob> scheduled,
+            String jobQueryRegex) {
+            if (jobQueryRegex == null) return scheduled;
+            
+            List<ScheduledJob> ret = new ArrayList<ScheduledJob>();
+            for (ScheduledJob job: scheduled) {
+                final String id = job.getId();
+                final Flow flow = manager.getFlow(id);
+                if (flow.getName().matches(jobQueryRegex)) {
+                    ret.add(job);
+                }
+            }
+            return ret;
+        }
+
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
@@ -102,7 +154,7 @@ public class IndexServlet extends AbstractAzkabanServlet {
         if ("loadjobs".equals(action)) {
         	resp.setContentType("application/json");
         	String folder = getParam(req, "folder");
-        	resp.getWriter().print(getJSONJobsForFolder(app.getAllFlows(), folder));
+        	resp.getWriter().print(getJSONJobsForFolder(app.getAllFlows(), folder, jobQueryRegex));
         	resp.getWriter().flush();
         	return;
         }
@@ -123,20 +175,41 @@ public class IndexServlet extends AbstractAzkabanServlet {
         resp.sendRedirect(req.getContextPath());
     }
     
-	private String getJSONJobsForFolder(FlowManager manager, String folder) {
+	private String getJSONJobsForFolder(FlowManager manager, String folder, 
+	        String regex) {
     	List<String> rootJobs = manager.getRootNamesByFolder(folder);
     	Collections.sort(rootJobs);
 
     	ArrayList<Object> rootJobObj = new ArrayList<Object>();
     	for (String root: rootJobs) {
-    		Flow flow = manager.getFlow(root);
-    		HashMap<String,Object> flowObj = getJSONDependencyTree(flow);
-    		rootJobObj.add(flowObj);
+    	    if (regex == null || root.matches(regex)) {
+    	       Flow flow = manager.getFlow(root);
+    	       HashMap<String,Object> flowObj = getJSONDependencyTree(flow);
+    	       rootJobObj.add(flowObj);
+    	    }
     	}
     	
     	return JSONUtils.toJSONString(rootJobObj);
     }
     
+    private List<String> getFolders(FlowManager manager, String jobQueryRegex) {
+        
+        final List<String> allFolders = manager.getFolders();
+        if (jobQueryRegex == null) return allFolders;
+        
+        List<String> ret = new ArrayList<String>();
+        for (String folder: allFolders) {
+            List<String> topJobs = manager.getRootNamesByFolder(folder);
+            for (String topJob: topJobs) {
+                if (topJob.matches(jobQueryRegex)) {
+                    ret.add(folder);
+                    break;
+                }
+            }
+        }
+        return ret;
+    }
+
 	private HashMap<String,Object> getJSONDependencyTree(Flow flow) {
     	HashMap<String,Object> jobObject = new HashMap<String,Object>();
     	jobObject.put("name", flow.getName());

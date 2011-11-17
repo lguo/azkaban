@@ -51,11 +51,11 @@ public class AbstractAzkabanServlet extends HttpServlet {
         _app = WebUtils.getApp(config);
     }
 
-    public boolean hasParam(HttpServletRequest request, String param) {
+    public static boolean hasParam(HttpServletRequest request, String param) {
         return request.getParameter(param) != null;
     }
 
-    public String getParam(HttpServletRequest request, String name) throws ServletException {
+    public static String getParam(HttpServletRequest request, String name) throws ServletException {
         String p = request.getParameter(name);
         if(p == null || p.equals(""))
             throw new ServletException("Missing required parameter '" + name + "'.");
@@ -63,7 +63,7 @@ public class AbstractAzkabanServlet extends HttpServlet {
             return p;
     }
 
-    public int getIntParam(HttpServletRequest request, String name) throws ServletException {
+    public static int getIntParam(HttpServletRequest request, String name) throws ServletException {
         String p = getParam(request, name);
         return Integer.parseInt(p);
     }

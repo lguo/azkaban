@@ -7,6 +7,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -18,6 +21,7 @@ import azkaban.flow.WrappingExecutableFlow;
 import azkaban.jobs.Status;
 import azkaban.jobs.JobExecutorManager.ExecutingJobAndInstance;
 import azkaban.util.json.JSONUtils;
+import azkaban.web.AbstractAzkabanServlet;
 
 /**
  * Common helper class for common cross page functionality
@@ -193,4 +197,28 @@ public class ExecutingJobUtils {
 			return first.compareTo(second);
 		}
     }
+    
+    
+    // search related util funcitons
+    public static String getJobSearch(HttpServletRequest req) 
+    throws ServletException {
+        if (AbstractAzkabanServlet.hasParam(req, "action")) {
+            final String action = AbstractAzkabanServlet.getParam(req, "action");
+            if ("search".equals(action)) {
+                if (AbstractAzkabanServlet.hasParam(req, "job")) {
+                    return AbstractAzkabanServlet.getParam(req, "job");
+                }
+            }
+        }
+        return null;
+    }
+
+    /*
+     * We support wildcard. This function replace query containing
+     * wildcards to regex string. 
+     */
+    public static String getRegex (String query) {
+        return query.replace("*", ".*");
+    }
+
 }

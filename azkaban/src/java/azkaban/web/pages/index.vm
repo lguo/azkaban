@@ -78,7 +78,11 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 		  	   <div id="executing-tab">
 		  	       <div class="box">
 		       		<h3>Executing Jobs</h3>
-
+                       <form method="get">
+                           <input type="hidden" name="action" value="search" />
+                           <input type="text" name="job" />
+                           <input type="submit" value="Search" />
+                       </form>
 					      <table id="execTable" class="jobtable execing-jobs-table translucent">
 					        <colgroup>
 			  		          	<col class="execid"/>
@@ -103,6 +107,11 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 		  	   <div id="schedule-tab">
 		  	       <div class="box">
 		  	       	    <h3>Scheduled Jobs</h3>
+		  	       	    <form method="get">
+                           <input type="hidden" name="action" value="search" />
+                           <input type="text" name="job" />
+                           <input type="submit" value="Search" />
+                        </form>
 		       	        #if($scheduled.size() > 0)
 					      <table class="jobtable translucent">
 					        <tr>
@@ -139,6 +148,12 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 		  	   <div id="job-tab">
 		  	       <div class="box">
 			  	       <h3>All Jobs</h3>
+			  	       <form method="get">
+                           <input type="hidden" name="action" value="search" />
+                           <input type="text" name="job" />
+                           <input type="submit" value="Search" />
+                       </form>
+			  	       
 			    	   <div class="all-jobs">
 			    	        <form id="runSubmit" method="post" action="${context}/">
 					        <div class="sched-form">

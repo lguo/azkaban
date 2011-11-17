@@ -48,7 +48,6 @@ public class ExecutionHistoryServlet extends AbstractAzkabanServlet {
         /* set runtime properties from request and response*/
         super.setRuntimeProperties (req, resp);
         
-        String jobQuery = null;
         if (hasParam(req, "action")) {
             final String action = getParam(req, "action");
             if ("restart".equals(action) && hasParam(req, "id")) {
@@ -74,13 +73,10 @@ public class ExecutionHistoryServlet extends AbstractAzkabanServlet {
                 	addMessage(req, "Error restarting " + getParam(req, "id") + ". " + e.getMessage());
                 }
             }
-            /* get query term */
-            else if ("search".equals(action)) {
-                if (hasParam(req, "job")) {
-                    jobQuery = getParam(req, "job");
-                }
-            }
         }
+
+        final String jobQuery = ExecutingJobUtils.getJobSearch(req);
+        final String regex = jobQuery==null? null: ExecutingJobUtils.getRegex(jobQuery);
 
         long currMaxId = allFlows.getCurrMaxId();
 
@@ -98,10 +94,10 @@ public class ExecutionHistoryServlet extends AbstractAzkabanServlet {
                 flow = holder.getFlow();
 
             if (flow != null) {
-                if (jobQuery != null) { // filter job (flow) names by query
-                    final String regex = getRegex(jobQuery);
-                    if (flow.getName().matches(regex))
+                if (regex != null) { // filter job (flow) names by query
+                    if (flow.getName().matches(regex)) {
                         execs.add(flow);
+                    }
                 }
                 else {
                     execs.add(flow);
@@ -120,11 +116,4 @@ public class ExecutionHistoryServlet extends AbstractAzkabanServlet {
         page.render();
     }
     
-    /*
-     * We support wildcard. This function replace query containing
-     * wildcards to regex string. 
-     */
-    private String getRegex (String query) {
-        return query.replace("*", ".*");
-    }
 }
