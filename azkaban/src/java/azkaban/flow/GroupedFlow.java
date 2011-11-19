@@ -20,11 +20,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.lang.StringUtils;
-
-import azkaban.common.utils.Props;
-
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
@@ -42,6 +38,7 @@ public class GroupedFlow implements Flow
 {
     private final Flow[] flows;
     private final Flow[] sortedFlows;
+    private boolean isValid;
 
     public GroupedFlow(Flow... flows)
     {
@@ -109,4 +106,15 @@ public class GroupedFlow implements Flow
                "flows=" + (flows == null ? null : Arrays.asList(flows)) +
                '}';
     }
+    
+    @Override
+    public boolean isValid() {
+        return isValid;
+    }
+
+    @Override
+    public void setValid(boolean valid) {
+        isValid = valid;
+    }
+
 }

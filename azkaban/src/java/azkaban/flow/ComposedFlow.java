@@ -17,11 +17,8 @@
 package azkaban.flow;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import azkaban.common.utils.Props;
 
 /**
  * A "composition" of flows.  This is composition in the functional sense.
@@ -39,7 +36,8 @@ public class ComposedFlow implements Flow
 {
     private final Flow depender;
     private final Flow dependee;
-
+    private boolean isValid = true;
+    
     public ComposedFlow(Flow depender, Flow dependee)
     {
         this.depender = depender;
@@ -97,4 +95,15 @@ public class ComposedFlow implements Flow
                ", dependee=" + dependee +
                '}';
     }
+    
+    @Override
+    public boolean isValid() {
+        return isValid;
+    }
+
+    @Override
+    public void setValid(boolean valid) {
+        isValid = valid;
+    }
+
 }

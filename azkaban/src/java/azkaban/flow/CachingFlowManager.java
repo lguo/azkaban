@@ -23,6 +23,7 @@ import azkaban.jobs.Status;
 
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -188,4 +189,22 @@ public class CachingFlowManager implements FlowManager
 	public List<String> getRootNamesByFolder(String folder) {
 		return baseManager.getRootNamesByFolder(folder);
 	}
+
+    @Override
+    public Set<String> getContainedJobs(String folder) {
+        return baseManager.getContainedJobs(folder);
+    }
+    
+    @Override
+    public Set<String> getDependantFlows(Set<String> jobs) {
+        return baseManager.getDependantFlows(jobs);
+    }
+
+
+    @Override
+    public void deleteFolder(String folder, Set<String> dependantFlows)
+            throws IOException {
+        baseManager.deleteFolder(folder, dependantFlows);
+    }
+
 }

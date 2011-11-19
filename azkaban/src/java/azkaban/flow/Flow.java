@@ -18,8 +18,8 @@ package azkaban.flow;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import azkaban.common.utils.Props;
 
 /**
  * An immutable class that represents a given workflow.
@@ -68,4 +68,17 @@ public interface Flow {
      * @return an ExecutableFlow that, when executed, will run the flow represented by this object
      */
     ExecutableFlow createExecutableFlow(String id, Map<String, ExecutableFlow> overrides);
+    
+    /**
+     * Check whether the flow is valid
+     * 
+     * @return false    if any dependents are not valids
+     *         true     otherwise
+     */
+    public boolean isValid();
+    
+    /**
+     * set valid sign
+     */
+    public void setValid(boolean valid);
 }

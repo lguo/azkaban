@@ -18,12 +18,11 @@ package azkaban.flow;
 
 import azkaban.app.JobDescriptor;
 import azkaban.app.JobManager;
-import azkaban.app.JobWrappingFactory;
-import azkaban.common.utils.Props;
 import azkaban.serialization.FlowExecutionSerializer;
 import azkaban.serialization.de.FlowExecutionDeserializer;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -126,32 +125,72 @@ public class RefreshableFlowManager implements FlowManager
         reloadInternal(null);
     }
 
+    private final String getJobPath(String in) {
+        String jobPath = in;
+        if (jobPath.contains("/")) {
+            String[] split = jobPath.split("/");
+            if (split[0].isEmpty()) {
+                jobPath = split[1];
+            }
+            else {
+                jobPath = split[0];
+            }
+        }
+        else {
+            jobPath = "default";
+        }
+        return jobPath;
+    }
+    
+
+    public Set<String> getContainedJobs(String folder) {
+        
+        Set<String> ret = new HashSet<String>();
+        
+        List<String> rootNames = getRootNamesByFolder(folder);
+        if (rootNames == null) return ret;
+        
+        LinkedList<JobDescriptor> queue = new LinkedList<JobDescriptor>(); 
+        
+        for (String jobName : rootNames) {
+            JobDescriptor jobDesc = jobManager.getJobDescriptor(jobName);
+            queue.clear();
+            queue.addAll(jobDesc.getDependencies());
+            while (!queue.isEmpty()) {
+                JobDescriptor job = queue.pollFirst();
+                String jobPath = getJobPath(job.getPath());
+                if (jobPath.equals(folder)) {
+                    ret.add(job.getId());
+                }
+                
+                queue.addAll(job.getDependencies());
+            }
+            
+        }
+        
+        return ret;
+    }
+
     private final void reloadInternal(Long lastId)
+    {
+        reloadInternal(lastId, null);
+    }
+
+    private final void reloadInternal(Long lastId, Set<String> invalid)
     {
         Map<String, Flow> flowMap = new HashMap<String, Flow>();
         Map<String, List<String>> folderToRoot = new LinkedHashMap<String, List<String>>();
         Set<String> rootFlows = new TreeSet<String>();
         final Map<String, JobDescriptor> allJobDescriptors = jobManager.loadJobDescriptors();
+        
         for (JobDescriptor rootDescriptor : jobManager.getRootJobDescriptors(allJobDescriptors)) {
             if (rootDescriptor.getId() != null) {
                 // This call of magical wonderment ends up pushing all Flow objects in the dependency graph for the root into flowMap
-                Flows.buildLegacyFlow(jobManager, flowMap, rootDescriptor, allJobDescriptors);
+                Flows.buildLegacyFlow(jobManager, flowMap, rootDescriptor, allJobDescriptors, invalid);
                 rootFlows.add(rootDescriptor.getId());
 
                 // For folder path additions
-                String jobPath = rootDescriptor.getPath();
-                if (jobPath.contains("/")) {
-	                String[] split = jobPath.split("/");
-	                if (split[0].isEmpty()) {
-	                	jobPath = split[1];
-	                }
-	                else {
-	                	jobPath = split[0];
-	                }
-                }
-                else {
-                	jobPath = "default";
-                }
+                String jobPath = getJobPath(rootDescriptor.getPath());
 
                 List<String> root = folderToRoot.get(jobPath);
                 if (root == null) {
@@ -167,7 +206,7 @@ public class RefreshableFlowManager implements FlowManager
                     new ImmutableFlowManager(
                             flowMap,
                             rootFlows,
-                    		folderToRoot,
+                            folderToRoot,
                             serializer,
                             deserializer,
                             storageDirectory,
@@ -176,6 +215,7 @@ public class RefreshableFlowManager implements FlowManager
             );
         }
     }
+    
 
 	@Override
 	public List<String> getFolders() {
@@ -186,4 +226,44 @@ public class RefreshableFlowManager implements FlowManager
 	public List<String> getRootNamesByFolder(String folder) {
 		return delegateManager.get().getRootNamesByFolder(folder);
 	}
+
+    @Override
+    public Set<String> getDependantFlows(Set<String> toDel) {
+        Set<String> rootFlows = this.getRootFlowNames();
+        Set<String> ret = new HashSet<String>();
+        
+        LinkedList<JobDescriptor> queue = new LinkedList<JobDescriptor>();
+        
+        for (String rootFlow: rootFlows) {
+            //ignore flows already in the input job set
+            if (toDel.contains(rootFlow)) continue;
+            
+            JobDescriptor descriptor = jobManager.getJobDescriptor(rootFlow);
+            queue.clear();
+            queue.add(descriptor);
+            
+            while (!queue.isEmpty()) {
+                JobDescriptor top = queue.pollFirst();
+
+                Set<JobDescriptor> dependents = top.getDependencies();
+                for (JobDescriptor dependent: dependents) {
+                    if (toDel.contains(dependent.getId())) {
+                        ret.add(top.getId());
+                    }
+                    else {
+                        queue.add(dependent);
+                    }
+                }
+            }
+            
+        }
+        return ret;
+    }
+
+    @Override
+    public void deleteFolder(String folder, Set<String> dependentFlows) 
+    throws IOException {
+        jobManager.deleteFolder(folder);
+        reloadInternal(null, dependentFlows);
+    }
 }

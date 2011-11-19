@@ -32,7 +32,8 @@ public class Flows
             final JobManager jobManager,
             final Map<String, Flow> alreadyBuiltFlows,
             final JobDescriptor rootDescriptor,
-            final Map<String, JobDescriptor> allJobDescriptors
+            final Map<String, JobDescriptor> allJobDescriptors, 
+            final Set<String> invalidFlows
     )
     {
         //TODO MED: The jobManager isn't really the best Job factory.  It should be revisited, but it works for now.
@@ -47,7 +48,7 @@ public class Flows
 
             int index = 0;
             for (JobDescriptor jobDescriptor : dependencies) {
-                depFlows[index] = buildLegacyFlow(jobManager, alreadyBuiltFlows, jobDescriptor, allJobDescriptors);
+                depFlows[index] = buildLegacyFlow(jobManager, alreadyBuiltFlows, jobDescriptor, allJobDescriptors, invalidFlows);
                 ++index;
             }
 
@@ -68,6 +69,11 @@ public class Flows
 
         alreadyBuiltFlows.put(retVal.getName(), retVal);
 
+        // set isValid flag
+        if (invalidFlows!=null && invalidFlows.contains(retVal.getName())) {
+            retVal.setValid(false);
+        }
+        
         return retVal;
     }
 

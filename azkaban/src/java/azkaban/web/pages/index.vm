@@ -153,6 +153,12 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
                            <input type="text" name="job" />
                            <input type="submit" value="Search" />
                        </form>
+                       <form method="get">
+                           <input type="hidden" name="action" value="delete" />
+                           <input type="text" name="folder" />
+                           <input type="submit" value="Delete" />
+                       </form>
+
 			  	       
 			    	   <div class="all-jobs">
 			    	        <form id="runSubmit" method="post" action="${context}/">

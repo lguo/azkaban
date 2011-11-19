@@ -19,12 +19,11 @@ package azkaban.flow;
 import azkaban.flow.ExecutableFlow;
 import azkaban.flow.Flow;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import azkaban.common.utils.Props;
 
 /**
  *
@@ -137,4 +136,30 @@ public interface FlowManager extends Iterable<Flow>
      * Tells the FlowManager to reload its flows.
      */
     void reload();
+
+    /**
+     * Get all jobs contained in a folder
+     * 
+     * @param folder
+     * @return
+     */
+    Set<String> getContainedJobs(String folder);
+
+    /**
+     * Get all flows dependent on jobs in the input set
+     * 
+     * @param jobs
+     * @return
+     */
+    Set<String> getDependantFlows(Set<String> jobs);
+
+    /**
+     * Delete a folder and all its containing jobs and mark 
+     * any job dependent on them as invalid.
+     * 
+     * @param folder
+     * @param dependantFlows
+     */
+    void deleteFolder(String folder, Set<String> dependantFlows)
+    throws IOException;
 }

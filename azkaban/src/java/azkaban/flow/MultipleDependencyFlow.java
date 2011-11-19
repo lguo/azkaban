@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import azkaban.common.utils.Props;
-
 /**
  * A flow that provides an API for creating a dependency graph.
  *
@@ -43,7 +41,8 @@ public class MultipleDependencyFlow implements Flow
     private final GroupedFlow dependeesGrouping;
     private final ComposedFlow actualFlow;
     private final Flow depender;
-
+    private boolean isValid = true;
+    
     public MultipleDependencyFlow(Flow depender, Flow... dependees)
     {
         this.depender = depender;
@@ -98,4 +97,15 @@ public class MultipleDependencyFlow implements Flow
                ", actualFlow=" + actualFlow +
                '}';
     }
+    
+    @Override
+    public boolean isValid() {
+        return isValid;
+    }
+
+    @Override
+    public void setValid(boolean valid) {
+        isValid = valid;
+    }
+
 }

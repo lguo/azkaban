@@ -31,6 +31,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -40,6 +41,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,6 +81,13 @@ public class JobManager {
     private volatile FlowManager manager;
     private final AtomicReference<Map<String, JobDescriptor>> jobDescriptorCache =
             new AtomicReference<Map<String, JobDescriptor>>(Collections.<String, JobDescriptor>emptyMap());
+
+    private static final FilenameFilter filenameFilter = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+            return !name.equals(".") && !name.equals("..");
+        }
+    };
 
     public JobManager(
             final JobWrappingFactory factory,
@@ -576,5 +585,57 @@ public class JobManager {
      */
     public String getLogDir() {
         return _logDir;
+    }
+
+    private boolean deleteFolder(File folder) throws IOException {
+        // delete all files under the folder
+        
+        LinkedList<File> toDelete = new LinkedList<File>();
+        toDelete.add(folder);
+        
+        boolean ret;
+        while (!toDelete.isEmpty()) {
+            File file = toDelete.pollFirst();
+            if (file.isFile()) {
+                System.out.println("delete file:" + file.getPath());
+                ret = file.delete();
+                if (!ret) throw new IOException("Error in deleting " + file.getPath());
+            }
+            else if (file.isDirectory()) {
+                File[] files = file.listFiles(filenameFilter);
+                if (files==null || files.length==0) {
+                    System.out.println("delete empty folder:" + file.getPath());
+                    ret = file.delete();
+                    if (!ret) throw new IOException("Error in deleting " + file.getPath());
+                }
+                else {
+                    for (File f: files) { toDelete.add(f); }
+                    toDelete.add(file);
+                }
+            }
+        }
+        
+        
+        return true;
+    }
+
+    public void deleteFolder(String folder) throws IOException {
+        for(File root: _jobDirs) {
+            File[] folders = root.listFiles();
+            
+            for (File folderFile: folders) {
+                final String name = folderFile.getName();
+                System.out.println("check file:" + folderFile + " with name:" + name);
+                
+                if (!name.equals(folder)) continue;
+                if (folderFile.isFile()) continue;
+                
+                // delete the folder
+                boolean ret = deleteFolder(folderFile);
+                // no need to check other root directory since there
+                // is no duplicate
+                if (ret) break;
+            }
+        }
     }
 }

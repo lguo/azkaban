@@ -21,6 +21,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -28,12 +29,8 @@ import azkaban.serialization.FlowExecutionSerializer;
 import azkaban.serialization.de.FlowExecutionDeserializer;
 import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.io.IOUtils;
-import org.joda.time.DateTime;
 import org.json.JSONObject;
 
-import azkaban.common.utils.Props;
-import azkaban.serialization.ExecutableFlowSerializer;
-import azkaban.serialization.de.ExecutableFlowDeserializer;
 import azkaban.util.JSONToJava;
 
 /**
@@ -56,7 +53,7 @@ public class ImmutableFlowManager implements FlowManager
     public ImmutableFlowManager(
             Map<String, Flow> flowMap,
             Set<String> rootFlows,
-            Map<String, List<String>> folderToRoot, 
+            Map<String, List<String>> folderToRoot,
             FlowExecutionSerializer serializer,
             FlowExecutionDeserializer deserializer,
             File storageDirectory,
@@ -196,4 +193,22 @@ public class ImmutableFlowManager implements FlowManager
 	public List<String> getRootNamesByFolder(String folder) {
 		return folderToRoot.get(folder);
 	}
+
+    @Override
+    public Set<String> getContainedJobs(String folder) {
+        throw new UnsupportedOperationException();
+    }
+
+
+    @Override
+    public Set<String> getDependantFlows(Set<String> jobs) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void deleteFolder(String folder, Set<String> dependantFlows)
+            throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
 }

@@ -19,9 +19,9 @@ package azkaban.flow;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import azkaban.app.JobManager;
-import azkaban.common.utils.Props;
 
 
 /**
@@ -31,6 +31,7 @@ public class IndividualJobFlow implements Flow
 {
     private final JobManager jobManager;
     private final String name;
+    private boolean isValid = true;
 
     public IndividualJobFlow(String name, JobManager jobManager)
     {
@@ -77,5 +78,15 @@ public class IndividualJobFlow implements Flow
         return "IndividualJobExecutableFlow{" +
                "job=" + name +
                '}';
+    }
+
+    @Override
+    public boolean isValid() {
+        return isValid;
+    }
+
+    @Override
+    public void setValid(boolean valid) {
+        isValid = valid;
     }
 }
