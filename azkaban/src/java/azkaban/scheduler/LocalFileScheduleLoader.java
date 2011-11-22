@@ -47,9 +47,12 @@ public class LocalFileScheduleLoader implements ScheduleLoader {
 	private static final String ID = "id";
 	private static final String SCHEDULE = "schedule";
 	private static final String TIME = "time";
+	private static final String LASTRUNTIME = "lastRunTime";
 	private static final String TIMEZONE = "timezone";
 	private static final String RECURRENCE = "recurrence";
 	private static final String IGNORE_DEPENDENCY = "ignoreDependency";
+	
+	private static final String NULL = "null";
 	
 	private static DateTimeFormatter FILE_DATEFORMAT = DateTimeFormat.forPattern("yyyy-MM-dd.HH.mm.ss.SSS");
     private static Logger logger = Logger.getLogger(LocalFileScheduleLoader.class);
@@ -156,16 +159,23 @@ public class LocalFileScheduleLoader implements ScheduleLoader {
     	String timezone = (String)obj.get(TIMEZONE);
     	String recurrence = (String)obj.get(RECURRENCE);
     	Boolean dependency = (Boolean)obj.get(IGNORE_DEPENDENCY);
+    	String lastRunTimeStr = obj.containsKey(LASTRUNTIME)? 
+    	                         (String)obj.get(LASTRUNTIME): NULL ;
+    	
     	if (dependency == null) {
     		dependency = false;
     	}
     	
     	DateTime dateTime = FILE_DATEFORMAT.parseDateTime(time);
-
+    	DateTime lastRunTime = NULL.equals(lastRunTimeStr)?
+    	                         null: 
+    	                         FILE_DATEFORMAT.parseDateTime(lastRunTimeStr);
+    	
     	if (dateTime == null) {
     		logger.error("No time has been set");
     		return null;
     	}
+    	
     	if (timezone != null) {
     		dateTime = dateTime.withZoneRetainFields(DateTimeZone.forID(timezone));
     	}
@@ -175,7 +185,7 @@ public class LocalFileScheduleLoader implements ScheduleLoader {
     		period = parsePeriodString(id, recurrence);
     	}
 
-    	ScheduledJob scheduledJob = new ScheduledJob(id, dateTime, period, dependency);
+    	ScheduledJob scheduledJob = new ScheduledJob(id, dateTime, lastRunTime, period, dependency);
     	if (scheduledJob.updateTime()) {
     		return scheduledJob;
     	}
@@ -191,6 +201,11 @@ public class LocalFileScheduleLoader implements ScheduleLoader {
     	object.put(TIMEZONE, job.getScheduledExecution().getZone().getID());
     	object.put(RECURRENCE, createPeriodString(job.getPeriod()));
     	object.put(IGNORE_DEPENDENCY, job.isDependencyIgnored());
+    	
+    	String lastExecutionStr = job.getHasLastExecution()? 
+    	                            FILE_DATEFORMAT.print(job.getLastExecution()): 
+    	                            NULL;
+    	object.put(LASTRUNTIME, lastExecutionStr);
     	
     	return object;
     }

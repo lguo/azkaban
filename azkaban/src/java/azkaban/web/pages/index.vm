@@ -116,6 +116,7 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 					      <table class="jobtable translucent">
 					        <tr>
 					          <th>Name</th>
+					          <th>Last Execution</th>
 					          <th>Next Execution</th>
 					          <th>Period</th>
 					          <th></th>
@@ -125,6 +126,11 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 					            <td>
 					              <a class="job-name" href="${context}/job?id=${sched.id}&logs">$sched.id</a>
 					            </td>
+					            #if($sched.hasLastExecution)
+					                <td>$utils.formatDateTimeAndZone($sched.lastExecution)</td>
+					            #else
+					                <td>N/A</td>
+					            #end
 					            <td>$utils.formatDateTimeAndZone($sched.scheduledExecution)</td>
 					            <td>
 					              #formatPeriod($sched.period)

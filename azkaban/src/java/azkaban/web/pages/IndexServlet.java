@@ -167,7 +167,7 @@ public class IndexServlet extends AbstractAzkabanServlet {
         Set<String> dependantFlows = flowMgr.getDependantFlows(containedJobs);
         boolean toDelete = (dependantFlows == null || dependantFlows.size()==0);
         if (!toDelete) {
-            // show warning message
+            /** TODO:  show warning message **/
             toDelete = true;
         }
 

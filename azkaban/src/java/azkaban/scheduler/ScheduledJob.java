@@ -35,6 +35,8 @@ public class ScheduledJob {
     private DateTime nextScheduledExecution;
     private final boolean ignoreDependency;
 
+    private DateTime lastExecution = null;
+    
     /**
      * Constructor 
      * 
@@ -45,7 +47,21 @@ public class ScheduledJob {
     public ScheduledJob(String jobName,
                         DateTime nextExecution,
                         boolean ignoreDependency) {
-        this(jobName, nextExecution, null, ignoreDependency);
+        this(jobName, nextExecution, null, null, ignoreDependency);
+    }
+
+    /**
+     * Constructor 
+     * 
+     * @param jobName Unique job name
+     * @param nextExecution The next execution time
+     * @param ignoreDependency 
+     */
+    public ScheduledJob(String jobName,
+                        DateTime nextExecution,
+                        DateTime lastExecution,
+                        boolean ignoreDependency) {
+        this(jobName, nextExecution, lastExecution, null, ignoreDependency);
     }
 
     /**
@@ -60,11 +76,28 @@ public class ScheduledJob {
                         DateTime nextExecution,
                         ReadablePeriod period,
                         boolean ignoreDependency) {
+        this(jobId,  nextExecution, null, period, ignoreDependency);
+    }
+
+    /**
+     * Constructor
+     * 
+     * @param jobId
+     * @param nextExecution
+     * @param period
+     * @param ignoreDependency
+     */
+    public ScheduledJob(String jobId,
+                        DateTime nextExecution,
+                        DateTime lastExecution,
+                        ReadablePeriod period,
+                        boolean ignoreDependency) {
         super();
         this.ignoreDependency = ignoreDependency;
         this.jobName = Utils.nonNull(jobId);
         this.period = period;
         this.nextScheduledExecution = Utils.nonNull(nextExecution);
+        this.lastExecution = lastExecution;
     }
     
     /**
@@ -80,6 +113,10 @@ public class ScheduledJob {
         if (period != null) {
         	DateTime other = getNextRuntime(nextScheduledExecution, period);
     		
+        	this.lastExecution = this.nextScheduledExecution.isBeforeNow()?
+        	                        new DateTime(): 
+        	                        this.nextScheduledExecution;
+        	                    
     		this.nextScheduledExecution = other;
     		return true;
     	}
@@ -150,6 +187,18 @@ public class ScheduledJob {
     }
 
     /**
+     * Returns the last scheduled execution
+     * @return
+     */
+    public DateTime getLastExecution() {
+        return this.lastExecution;
+    }
+    
+    public boolean getHasLastExecution() {
+        return this.lastExecution != null;
+    }
+    
+    /**
      * Returns true if the dependency is ignored.
      * @return
      */
@@ -163,6 +212,7 @@ public class ScheduledJob {
         return "ScheduledJob{" +
                "ignoreDependency=" + ignoreDependency +
                ", nextScheduledExecution=" + nextScheduledExecution +
+               ", lastExecution=" + lastExecution +
                ", period=" + period +
                ", jobName='" + jobName + '\'' +
                '}';
