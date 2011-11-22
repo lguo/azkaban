@@ -73,46 +73,20 @@ public class IndexServlet extends AbstractAzkabanServlet {
         /* set runtime properties from request and response */
         super.setRuntimeProperties(req, resp);
 
-        AzkabanApplication app = getApplication();
-        
         final String jobQuery = ExecutingJobUtils.getJobSearch(req);
         jobQueryRegex = jobQuery == null? null : ExecutingJobUtils.getRegex(jobQuery);
         
-        /* put delete here for testing */
-        if (hasParam(req, "action")) {
-            String action = getParam(req, "action");
-            if ("delete".equals(action)) {
-                String folder = getParam(req, "folder");
-                FlowManager flowMgr = app.getAllFlows();
-                JobManager jobMgr = app.getJobManager();
-            
-                Set<String> containedJobs = flowMgr.getContainedJobs(folder);
-                Set<String> dependantFlows = flowMgr.getDependantFlows(containedJobs);
-                boolean toDelete = (dependantFlows == null || dependantFlows.size()==0);
-                if (!toDelete) {
-                    // show warning message
-                    toDelete = true;
-                }
+        Page page = getPage(req, resp, jobQueryRegex);
+        page.render();
+    }
 
-                if (toDelete) {
-                    try {
-                        jobMgr.deleteFolder(folder);
-                    }
-                    catch (IOException e) {
-                        System.err.println("Error in deleting folder: " + folder);
-                        // don't need to reload flow manager when delete fails
-                        toDelete = false;
-                    }
-                }
-                
-                if (toDelete) {
-                    flowMgr.reload();
-                }
-            }
-        }
+
+    private Page getPage(HttpServletRequest req, HttpServletResponse resp, String query) {
         
+        AzkabanApplication app = getApplication();
         @SuppressWarnings("unused")
         Map<String, JobDescriptor> descriptors = app.getJobManager().loadJobDescriptors();
+        
         Page page = newPage(req, resp, "azkaban/web/pages/index.vm");
         page.add("logDir", app.getLogDirectory());
         
@@ -120,10 +94,10 @@ public class IndexServlet extends AbstractAzkabanServlet {
         //page.add("flows", allFlows);
         
         List<ScheduledJob> scheduled = app.getScheduleManager().getSchedule();
-        page.add("scheduled", filterScheduled(flowMgr, scheduled, jobQueryRegex));
+        page.add("scheduled", filterScheduled(flowMgr, scheduled, query));
         
         Collection<ExecutingJobAndInstance> executing = app.getJobExecutorManager().getExecutingJobs();
-        Collection<ExecutingJobAndInstance> executingFiltered = filterExecuting(executing, jobQueryRegex);
+        Collection<ExecutingJobAndInstance> executingFiltered = filterExecuting(executing, query);
         page.add("executing", executingFiltered);
         
         //Multimap<String, JobExecution> completed = app.getJobExecutorManager().getCompleted();
@@ -132,7 +106,7 @@ public class IndexServlet extends AbstractAzkabanServlet {
         //Set<String> rootFlowNames = app.getAllFlows().getRootFlowNames();
         //page.add("rootJobNames", rootFlowNames);
         
-        page.add("folderNames", getFolders(flowMgr, jobQueryRegex));
+        page.add("folderNames", getFolders(flowMgr, query));
         
         page.add("jobDescComparator", JobDescriptor.NAME_COMPARATOR);
         
@@ -140,9 +114,9 @@ public class IndexServlet extends AbstractAzkabanServlet {
         page.add("jsonExecution", utils.getExecutableJobAndInstanceJSON(executingFiltered));
         page.add("timezone", ZONE_FORMATTER.print(System.currentTimeMillis()));
         page.add("currentTime",(new DateTime()).getMillis());
-        page.render();
+        
+        return page;
     }
-
 
     private Collection<ExecutingJobAndInstance> filterExecuting(
                 Collection<ExecutingJobAndInstance> executing,
@@ -177,6 +151,44 @@ public class IndexServlet extends AbstractAzkabanServlet {
         }
 
 
+    private boolean deleteFolder(HttpServletRequest req, HttpServletResponse resp,
+            String folder)
+    throws IOException, ServletException {
+        
+        if (folder == null || folder.trim().length()==0) return false;
+        
+        System.out.println("to delete folder " + folder);
+        
+        AzkabanApplication app = getApplication();
+        FlowManager flowMgr = app.getAllFlows();
+        JobManager jobMgr = app.getJobManager();
+                
+        Set<String> containedJobs = flowMgr.getContainedJobs(folder);
+        Set<String> dependantFlows = flowMgr.getDependantFlows(containedJobs);
+        boolean toDelete = (dependantFlows == null || dependantFlows.size()==0);
+        if (!toDelete) {
+            // show warning message
+            toDelete = true;
+        }
+
+        if (toDelete) {
+            try {
+                jobMgr.deleteFolder(folder);
+            }
+            catch (IOException e) {
+                System.err.println("Error in deleting folder: " + folder);
+                // don't need to reload flow manager when delete fails
+                toDelete = false;
+            }
+        }
+
+        if (toDelete) {
+            flowMgr.reload();
+        }
+        
+        return toDelete;
+    }
+            
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -193,26 +205,14 @@ public class IndexServlet extends AbstractAzkabanServlet {
         	resp.getWriter().flush();
         	return;
         }
-        else if ("delete".equals(action)) {
-//            String folder = getParam(req, "folder");
-//            FlowManager flowMgr = app.getAllFlows();
-//            
-//            Set<String> containedJobs = flowMgr.getContainedJobs(folder);
-//            Set<String> dependantFlows = flowMgr.getDependantFlows(containedJobs);
-//            if (dependantFlows == null || dependantFlows.size()==0) {
-//                flowMgr.deleteFolder(folder, dependantFlows);
-//            }
-//            else {
-//                // show warning message
-//                
-//                boolean toDelete = true;
-//                // delete the folder
-//                if (toDelete) {
-//                    flowMgr.deleteFolder(folder, dependantFlows);
-//                }
-//            }
-//            //resp.getWriter().print(getJSONJobsForFolder(app.getAllFlows(), folder, jobQueryRegex));
-//            //resp.getWriter().flush();
+        else if ("delete".equals(action) && hasParam(req, "folder")){
+             String folder = getParam(req, "folder");
+             boolean deleted = deleteFolder(req, resp, folder);
+             if (deleted) {
+                 Page page = getPage(req, resp, null);
+                 page.render();
+             }
+             return;
         }
         else if("unschedule".equals(action)) {
             String jobid = getParam(req, "job");

@@ -153,12 +153,13 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
                            <input type="text" name="job" />
                            <input type="submit" value="Search" />
                        </form>
+                       <!--
                        <form method="get">
                            <input type="hidden" name="action" value="delete" />
                            <input type="text" name="folder" />
                            <input type="submit" value="Delete" />
                        </form>
-
+                        -->
 			  	       
 			    	   <div class="all-jobs">
 			    	        <form id="runSubmit" method="post" action="${context}/">
@@ -199,7 +200,14 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 					          #foreach($folderName in $folderNames)
 					          	<div class="jobfolder expand" onclick="expandFlow(this)" id="$folderName">
 					          		<span><div class="folderIcon"></div></span><p>$folderName</p>
-					          	</div>
+                                </div>
+                                <div 
+					          		<form method="post">
+					          		    <input type="hidden" name="action" value="delete" />
+					          		    <input type="hidden" name="folder" value="$folderName" />
+					          		    <input type="submit" value="Delete" />
+					          		</form>
+					          	</div>	
 					          	<div id="${folderName}-panel" style="display: none">
 					          		<table id="${folderName}-table" class="jobtreetable">
 					          		</table>
