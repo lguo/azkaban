@@ -135,7 +135,7 @@ public interface FlowManager extends Iterable<Flow>
     /**
      * Tells the FlowManager to reload its flows.
      */
-    void reload();
+    void reload() throws IOException;
 
     /**
      * Get all jobs contained in a folder
@@ -153,13 +153,4 @@ public interface FlowManager extends Iterable<Flow>
      */
     Set<String> getDependantFlows(Set<String> jobs);
 
-    /**
-     * Delete a folder and all its containing jobs and mark 
-     * any job dependent on them as invalid.
-     * 
-     * @param folder
-     * @param dependantFlows
-     */
-    void deleteFolder(String folder, Set<String> dependantFlows)
-    throws IOException;
 }

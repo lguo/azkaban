@@ -177,7 +177,7 @@ public class ImmutableFlowManager implements FlowManager
     }
 
     @Override
-    public void reload()
+    public void reload() throws IOException
     {
         throw new UnsupportedOperationException();
     }
@@ -202,12 +202,6 @@ public class ImmutableFlowManager implements FlowManager
 
     @Override
     public Set<String> getDependantFlows(Set<String> jobs) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void deleteFolder(String folder, Set<String> dependantFlows)
-            throws IOException {
         throw new UnsupportedOperationException();
     }
 

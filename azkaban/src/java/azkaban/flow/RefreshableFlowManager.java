@@ -46,7 +46,7 @@ public class RefreshableFlowManager implements FlowManager
             FlowExecutionDeserializer deserializer,
             File storageDirectory,
             long lastId
-    )
+    ) throws IOException
     {
         this.jobManager = jobManager;
         this.serializer = serializer;
@@ -120,7 +120,7 @@ public class RefreshableFlowManager implements FlowManager
     }
 
     @Override
-    public void reload()
+    public void reload() throws IOException
     {
         reloadInternal(null);
     }
@@ -171,12 +171,7 @@ public class RefreshableFlowManager implements FlowManager
         return ret;
     }
 
-    private final void reloadInternal(Long lastId)
-    {
-        reloadInternal(lastId, null);
-    }
-
-    private final void reloadInternal(Long lastId, Set<String> invalid)
+    private final void reloadInternal(Long lastId) throws IOException
     {
         Map<String, Flow> flowMap = new HashMap<String, Flow>();
         Map<String, List<String>> folderToRoot = new LinkedHashMap<String, List<String>>();
@@ -184,9 +179,11 @@ public class RefreshableFlowManager implements FlowManager
         final Map<String, JobDescriptor> allJobDescriptors = jobManager.loadJobDescriptors();
         
         for (JobDescriptor rootDescriptor : jobManager.getRootJobDescriptors(allJobDescriptors)) {
-            if (rootDescriptor.getId() != null) {
+            final String id = rootDescriptor.getId();
+            //System.out.println("build flow:" + id);
+            if ( id != null) {
                 // This call of magical wonderment ends up pushing all Flow objects in the dependency graph for the root into flowMap
-                Flows.buildLegacyFlow(jobManager, flowMap, rootDescriptor, allJobDescriptors, invalid);
+                Flows.buildLegacyFlow(jobManager, flowMap, rootDescriptor, allJobDescriptors);
                 rootFlows.add(rootDescriptor.getId());
 
                 // For folder path additions
@@ -200,7 +197,7 @@ public class RefreshableFlowManager implements FlowManager
                 root.add(rootDescriptor.getId());
             }
         }
-
+        
         synchronized (idSync) {
             delegateManager.set(
                     new ImmutableFlowManager(
@@ -217,7 +214,7 @@ public class RefreshableFlowManager implements FlowManager
     }
     
 
-	@Override
+    @Override
 	public List<String> getFolders() {
 		return delegateManager.get().getFolders();
 	}
@@ -260,10 +257,4 @@ public class RefreshableFlowManager implements FlowManager
         return ret;
     }
 
-    @Override
-    public void deleteFolder(String folder, Set<String> dependentFlows) 
-    throws IOException {
-        jobManager.deleteFolder(folder);
-        reloadInternal(null, dependentFlows);
-    }
 }

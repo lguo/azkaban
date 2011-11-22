@@ -35,6 +35,8 @@ import azkaban.web.AbstractAzkabanServlet;
 
 import azkaban.common.utils.Props;
 import azkaban.common.web.Page;
+import azkaban.flow.Flow;
+import azkaban.flow.FlowManager;
 import azkaban.jobs.JobExecution;
 
 /**
@@ -55,6 +57,7 @@ public class JobDetailServlet extends AbstractAzkabanServlet {
         AzkabanApplication app = getApplication();
         String jobId = req.getParameter("id");
         JobManager jobManager = app.getJobManager();
+        FlowManager flowManager = app.getAllFlows();
         Map<String, JobDescriptor> descriptors = jobManager.loadJobDescriptors();
         boolean isEditing = req.getParameter("edit") != null;
         if(jobId == null) {
@@ -69,9 +72,11 @@ public class JobDetailServlet extends AbstractAzkabanServlet {
             page.add("jsonData", getJSONText(jdesc.getProps()));
             page.render();
         } else {
+            Flow flow = flowManager.getFlow(jobId);
             Page page = newPage(req, resp, "azkaban/web/pages/job_detail.vm");
             JobDescriptor jdesc = descriptors.get(jobId);
             page.add("job", jdesc);
+            page.add("valid", flow.isValid());
             page.add("descriptors", descriptors);
             page.add("jsonData", getJSONText(jdesc.getProps()));
         	if (req.getParameter("logs") != null) {

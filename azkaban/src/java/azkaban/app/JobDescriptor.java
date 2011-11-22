@@ -49,7 +49,7 @@ public class JobDescriptor {
     public static final String LOGGER_PATTERN = "logger.pattern";
     public static final String MAIL_SENDER = "mail.sender";
     public static final String SEND_SUCCESS_EMAIL = "azkaban.send.success.email";
-
+    
     public static final Comparator<JobDescriptor> NAME_COMPARATOR = new Comparator<JobDescriptor>() {
 
         public int compare(JobDescriptor d1, JobDescriptor d2) {
@@ -74,6 +74,8 @@ public class JobDescriptor {
     private final String _jobType;
     private final String _loggerPattern;
 
+    private Boolean _valid = null;
+    
     public JobDescriptor(String id, String conicalPath, String fullpath, Props props, ClassLoader classLoader) {
         this._id = id;
         this._path = conicalPath;
@@ -109,6 +111,14 @@ public class JobDescriptor {
         this._emailList = props.getStringList(NOTIFY_EMAIL);
     }
 
+    public Boolean isValid() {
+        return _valid;
+    }
+    
+    public void setValid(Boolean b) {
+        _valid = b;
+    }
+    
     /**
      * Add a dependency to this job
      * 

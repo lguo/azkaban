@@ -113,6 +113,10 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 					          <span class="h3like">Type:</span> $job.jobType
 					        </div>
 					        <div>
+                              <span class="h3like">Valid:</span> $valid
+                            </div>
+					        
+					        <div>
 					          <span class="h3like">Path:</span> $job.path
 					        </div>
 					        <div>

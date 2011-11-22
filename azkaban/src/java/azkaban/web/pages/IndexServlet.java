@@ -84,19 +84,29 @@ public class IndexServlet extends AbstractAzkabanServlet {
             if ("delete".equals(action)) {
                 String folder = getParam(req, "folder");
                 FlowManager flowMgr = app.getAllFlows();
+                JobManager jobMgr = app.getJobManager();
             
                 Set<String> containedJobs = flowMgr.getContainedJobs(folder);
                 Set<String> dependantFlows = flowMgr.getDependantFlows(containedJobs);
-                if (dependantFlows == null || dependantFlows.size()==0) {
-                    flowMgr.deleteFolder(folder, dependantFlows);
-                }
-                else {
+                boolean toDelete = (dependantFlows == null || dependantFlows.size()==0);
+                if (!toDelete) {
                     // show warning message
-                    boolean toDelete = true;
-                    // delete the folder
-                    if (toDelete) {
-                        flowMgr.deleteFolder(folder, dependantFlows);
+                    toDelete = true;
+                }
+
+                if (toDelete) {
+                    try {
+                        jobMgr.deleteFolder(folder);
                     }
+                    catch (IOException e) {
+                        System.err.println("Error in deleting folder: " + folder);
+                        // don't need to reload flow manager when delete fails
+                        toDelete = false;
+                    }
+                }
+                
+                if (toDelete) {
+                    flowMgr.reload();
                 }
             }
         }
@@ -184,25 +194,25 @@ public class IndexServlet extends AbstractAzkabanServlet {
         	return;
         }
         else if ("delete".equals(action)) {
-            String folder = getParam(req, "folder");
-            FlowManager flowMgr = app.getAllFlows();
-            
-            Set<String> containedJobs = flowMgr.getContainedJobs(folder);
-            Set<String> dependantFlows = flowMgr.getDependantFlows(containedJobs);
-            if (dependantFlows == null || dependantFlows.size()==0) {
-                flowMgr.deleteFolder(folder, dependantFlows);
-            }
-            else {
-                // show warning message
-                
-                boolean toDelete = true;
-                // delete the folder
-                if (toDelete) {
-                    flowMgr.deleteFolder(folder, dependantFlows);
-                }
-            }
-            //resp.getWriter().print(getJSONJobsForFolder(app.getAllFlows(), folder, jobQueryRegex));
-            //resp.getWriter().flush();
+//            String folder = getParam(req, "folder");
+//            FlowManager flowMgr = app.getAllFlows();
+//            
+//            Set<String> containedJobs = flowMgr.getContainedJobs(folder);
+//            Set<String> dependantFlows = flowMgr.getDependantFlows(containedJobs);
+//            if (dependantFlows == null || dependantFlows.size()==0) {
+//                flowMgr.deleteFolder(folder, dependantFlows);
+//            }
+//            else {
+//                // show warning message
+//                
+//                boolean toDelete = true;
+//                // delete the folder
+//                if (toDelete) {
+//                    flowMgr.deleteFolder(folder, dependantFlows);
+//                }
+//            }
+//            //resp.getWriter().print(getJSONJobsForFolder(app.getAllFlows(), folder, jobQueryRegex));
+//            //resp.getWriter().flush();
         }
         else if("unschedule".equals(action)) {
             String jobid = getParam(req, "job");

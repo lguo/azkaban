@@ -304,8 +304,10 @@ public class JobManager {
             }
 
         }
-        if(!ignoreDeps)
+        if(!ignoreDeps) {
             addDependencies(m);
+            addValidness(m);
+        }
         return m;
     }
 
@@ -350,7 +352,8 @@ public class JobManager {
                 try {
                     Props jobProps = new Props(dirProps, f.getAbsolutePath());
                     jobs.put(name, new JobDescriptor(name, jobPath, f.getPath(), jobProps, loader));
-                } catch(Exception e) {
+                } 
+                catch(Exception e) {
                     throw new JobLoadException("Failed to create Job '" + name + "': "
                                                + e.getLocalizedMessage(), e);
                 }
@@ -430,18 +433,57 @@ public class JobManager {
 
                 if(jobs.containsKey(name))
                     job.addDependency(jobs.get(name));
-                else
-                    throw new AppConfigurationException("Job '"
-                                                        + job.getId()
-                                                        + "' depends on job '"
-                                                        + name
-                                                        + "' which does not exist (check the spelling of the job name!).");
             }
         }
-
         // check for cycles
     }
 
+
+    private void addValidness(Map<String, JobDescriptor> jobs) {
+        LinkedList<JobDescriptor> queue = new LinkedList<JobDescriptor>();
+        queue.addAll(jobs.values());
+    
+        while (!queue.isEmpty()) {
+            JobDescriptor job = queue.pollFirst();
+            Boolean valid = job.isValid();
+            if (valid != null) continue; // it is set before
+            
+            List<String> dependencies = job.getProps().
+                    getStringList("dependencies", new ArrayList<String>());
+            
+            int numChildrenValid = 0;
+            for(String dep: dependencies) {
+                String name = dep.trim();
+                if(Utils.isNullOrEmpty(name))
+                    continue;
+
+                JobDescriptor child = jobs.get(name);
+                if (child != null) {
+                    Boolean isChildValid = child.isValid();
+                    if (isChildValid != null) {
+                        if (!isChildValid) {
+                            job.setValid(false);
+                        }
+                        else {
+                            numChildrenValid ++;
+                        }
+                    }
+                    else {
+                        queue.add(child);
+                    }
+                }
+                else {
+                    job.setValid(false);
+                }
+            }
+            
+            if (numChildrenValid == dependencies.size())
+                job.setValid(true);
+            
+            if (job.isValid() == null) queue.add(job);
+        }
+    }
+    
     /**
      * Load all files that are not jobs from the given directory as Props with
      * the given parent
@@ -486,7 +528,7 @@ public class JobManager {
     }
 
     public void setFlowManager(FlowManager theManager)
-    {
+    throws IOException {
         synchronized (this) {
             if (manager == null) {
                 manager = theManager;
@@ -499,13 +541,13 @@ public class JobManager {
         updateFlowManager();
     }
 
-    public void updateFlowManager()
+    public void updateFlowManager() throws IOException
     {
         jobDescriptorCache.set(loadJobDescriptors());
         manager.reload();
     }
 
-    public void deployJobDir(String localPath, String destPath) {
+    public void deployJobDir(String localPath, String destPath) throws IOException {
         File targetPath = new File(this._jobDirs.get(0), destPath);
         verifyPathValidity(new File(localPath), targetPath);
         if(targetPath.exists()) {
@@ -530,7 +572,7 @@ public class JobManager {
         updateFlowManager();
     }
 
-    public void deployJob(String jobName, String path, Props props) {
+    public void deployJob(String jobName, String path, Props props) throws IOException {
         File jobPath = new File(_jobDirs.get(0), path);
         if(jobPath.exists()) {
             if(!jobPath.isDirectory() || !jobPath.canWrite())

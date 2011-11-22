@@ -430,7 +430,7 @@ public class AzkabanApplication
         return _monitor;
     }
     
-    public void reloadJobsFromDisk() {
+    public void reloadJobsFromDisk() throws IOException {
         getJobManager().updateFlowManager();
     }
 }

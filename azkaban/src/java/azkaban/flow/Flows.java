@@ -16,6 +16,7 @@
 
 package azkaban.flow;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
@@ -32,9 +33,8 @@ public class Flows
             final JobManager jobManager,
             final Map<String, Flow> alreadyBuiltFlows,
             final JobDescriptor rootDescriptor,
-            final Map<String, JobDescriptor> allJobDescriptors, 
-            final Set<String> invalidFlows
-    )
+            final Map<String, JobDescriptor> allJobDescriptors
+    ) throws IOException
     {
         //TODO MED: The jobManager isn't really the best Job factory.  It should be revisited, but it works for now.
         if (alreadyBuiltFlows.containsKey(rootDescriptor.getId())) {
@@ -48,7 +48,7 @@ public class Flows
 
             int index = 0;
             for (JobDescriptor jobDescriptor : dependencies) {
-                depFlows[index] = buildLegacyFlow(jobManager, alreadyBuiltFlows, jobDescriptor, allJobDescriptors, invalidFlows);
+                depFlows[index] = buildLegacyFlow(jobManager, alreadyBuiltFlows, jobDescriptor, allJobDescriptors);
                 ++index;
             }
 
@@ -67,13 +67,14 @@ public class Flows
             );
         }
 
-        alreadyBuiltFlows.put(retVal.getName(), retVal);
-
-        // set isValid flag
-        if (invalidFlows!=null && invalidFlows.contains(retVal.getName())) {
-            retVal.setValid(false);
-        }
         
+        final Boolean isValid = rootDescriptor.isValid();
+        if (isValid == null) throw new IOException("job[" + rootDescriptor.getId() + "].isValid()=null");
+        retVal.setValid(isValid);
+        
+        final String name = retVal.getName();
+        alreadyBuiltFlows.put(name, retVal);
+
         return retVal;
     }
 

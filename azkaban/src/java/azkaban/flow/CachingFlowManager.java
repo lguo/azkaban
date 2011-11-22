@@ -158,7 +158,7 @@ public class CachingFlowManager implements FlowManager
         return retVal;
     }
 
-    public void reload()
+    public void reload() throws IOException
     {
         baseManager.reload();
     }
@@ -198,13 +198,6 @@ public class CachingFlowManager implements FlowManager
     @Override
     public Set<String> getDependantFlows(Set<String> jobs) {
         return baseManager.getDependantFlows(jobs);
-    }
-
-
-    @Override
-    public void deleteFolder(String folder, Set<String> dependantFlows)
-            throws IOException {
-        baseManager.deleteFolder(folder, dependantFlows);
     }
 
 }
