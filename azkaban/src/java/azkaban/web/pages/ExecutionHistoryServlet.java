@@ -87,19 +87,26 @@ public class ExecutionHistoryServlet extends AbstractAzkabanServlet {
         int size = sizeParam == null? 20 : Integer.parseInt(sizeParam);
 
         List<ExecutableFlow> execs = new ArrayList<ExecutableFlow>(size);
-        for (int i = begin; i < begin + size; i++) {
-            final FlowExecutionHolder holder = allFlows.loadExecutableFlow(currMaxId - i);
-            ExecutableFlow flow = null;
-            if (holder != null)
-                flow = holder.getFlow();
+        
+        if (regex != null) { // get paged search results
+            int num = -1;
+            for (long i = 0; i < currMaxId && execs.size() < size; i++) {
+                final FlowExecutionHolder holder = allFlows.loadExecutableFlow(currMaxId - i);
+                ExecutableFlow flow = null;
+                if (holder != null) flow = holder.getFlow();
 
-            if (flow != null) {
-                if (regex != null) { // filter job (flow) names by query
-                    if (flow.getName().matches(regex)) {
-                        execs.add(flow);
-                    }
+                if (flow != null && flow.getName().matches(regex)) {
+                    if ((++num) >= begin) execs.add(flow);
                 }
-                else {
+            }
+        }
+        else { // get paged results
+            for (long i = begin; i < currMaxId && i < begin + size; i++) {
+                final FlowExecutionHolder holder = allFlows.loadExecutableFlow(currMaxId - i);
+                ExecutableFlow flow = null;
+                if (holder != null) flow = holder.getFlow();
+
+                if (flow != null) {
                     execs.add(flow);
                 }
             }
