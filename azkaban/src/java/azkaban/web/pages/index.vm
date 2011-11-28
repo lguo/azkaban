@@ -1,4 +1,3 @@
-
 #macro(execing_job $desc)
   <li>
     <a class="job-name" href="${context}/job?id=${desc.name}&logs" title="${desc.name}">
@@ -54,141 +53,71 @@
 		$("#tabs").tabs({ cookie: { expires: 30 } });
 	  });
 	</script>
-    
-  </head>
-  <body>
-  #appnamebox()    
 
-  <div id="main">
-        <h2 class="title" >Home</h2>
-  	    <div id="variableWidth">
-  	        #messages()
-  	        <div id="tabs">
-  	          	<ul>
-  	          		<li><a href="#executing-tab">Executing</a></li><li>
-					<li><a href="#schedule-tab">Schedule</a></li>
-					<li><a href="#job-tab">Jobs</a></li>
-				</ul>
+</head>
+<body>
+  #parse( "azkaban/web/pages/nav.vm" )
 
-		  	   <div id="executing-tab">
-		  	       <div class="box">
-		       		<h3>Executing Jobs</h3>
+  <div id="wrapper">
+  <h2>All Jobs</h2>
+  <form id="runSubmit" method="post" action="${context}/">
+  <table id="all-jobs" class="job-table">
+    <tbody>
+    <tr>
+      <th class="tb-spacer"></th>
+      <th class="tb-name">Name</th>
+      <th class="tb-uploaded-date">Date Uploaded</th>
+      <th class="tb-uploaded-by">Uploaded By</th>
+      <th class="tb-delete"></th>
+      <th class="tb-spacer"></th>
+    </tr>
+    #foreach($folderName in $folderNames)
+    <tr>
+      <td class="tb-spacer"></td>
+      <td class="tb-name">
+        <div onclick="expandFlow(this)" id="$folderName">$folderName
+        </div>
+				<div id="${folderName}-panel" style="display: none">
+					<table id="${folderName}-table" class="jobtreetable">
+					</table>
+				</div>
+      </td>
+      <td class="tb-uploaded-date"></td>
+      <td class="tb-uploaded-by"></td>
+      <td class="tb-delete">
+        <button>Delete</button>
+      </td>
+      <td class="tb-spacer"></td>
+    </tr>
+    #end
+    </tbody>
+  </table>
+  </form>
 
-					      <table id="execTable" class="jobtable execing-jobs-table translucent">
-					        <colgroup>
-			  		          	<col class="execid"/>
-			  		          	<col class="titlecol"/>
-			  		          	<col class="datetime"/>
-			  		          	<col class="duration"/>
-			   		          	<col class="action"/>
-			  		        </colgroup>
-					        <tr>
-					          <th>Id</th>
-					          <th>Name</th>
-					          <th>Start Time</th>
-					          <th>Period</th>
-					          <th>Action</th>
-					        </tr>
-					      </table>
-					    #if($executing.size() == 0)
-					      No jobs currently executing.
-					    #end
-		  	       </div>
-		  	   </div>
-		  	   <div id="schedule-tab">
-		  	       <div class="box">
-		  	       	    <h3>Scheduled Jobs</h3>
-		       	        #if($scheduled.size() > 0)
-					      <table class="jobtable translucent">
-					        <tr>
-					          <th>Name</th>
-					          <th>Next Execution</th>
-					          <th>Period</th>
-					          <th></th>
-					        </tr>
-					        #foreach($sched in $scheduled)
-					          <tr>
-					            <td>
-					              <a class="job-name" href="${context}/job?id=${sched.id}&logs">$sched.id</a>
-					            </td>
-					            <td>$utils.formatDateTimeAndZone($sched.scheduledExecution)</td>
-					            <td>
-					              #formatPeriod($sched.period)
-					            </td>
-					            <td>
-					              <form action="${context}/" method="post" style="display: inline">
-					                <input type="hidden" name="action" value="unschedule"/>
-					                <input type="hidden" name="job" value="${sched.id}"/>     
-					                <input type="submit" value="Remove" />      
-					              </form>
-					            </td>
-					          </tr>
-					        #end
-					      </table>
-					    #else
-					      No scheduled jobs at this time.
-					    #end
-		  	       </div>
-		  	   </div>
-		  	   
-		  	   <div id="job-tab">
-		  	       <div class="box">
-			  	       <h3>All Jobs</h3>
-			    	   <div class="all-jobs">
-			    	        <form id="runSubmit" method="post" action="${context}/">
-					        <div class="sched-form">
-					          <div>
-					            Run immediately
-					              (<input name="include_deps" id="withdep" type="checkbox" checked /> with dependencies)
-					              <input type="submit" name="run_now" value="Run"/>
-					              <input id="submitType" type="hidden" />
-					          </div>
-					          <hr>
-					          <div>
-					            <input type="hidden" name="action" value="schedule"/>
-					            Schedule to run at 
-					            <input name="hour" type="text" size="2" value="12"/> :
-					            <input name="minutes" type="text" size="2" value="00"/>
-					            <select name="am_pm">
-					              <option>pm</option>
-					              <option>am</option>
-					            </select>
-					            $utils.shortTimeZone
-					            on
-					            <input class="scheduled_date" type="text" name="date" size="10" value="$utils.formatDate($utils.now())"/>
-					            and 
-					            <input name="is_recurring" type="checkbox" checked  />
-					            repeat every
-					            <input name="period" type="text" size="2" value="1"/>
-					            <select name="period_units">
-					              <option value="d">Days</option>
-					              <option value="h">Hours</option>
-					              <option value="m">Minutes</option>
-					              <option value="s">Seconds</option>
-					            </select>
-					            <input type="submit" name="schedule" value="Schedule"/>
-					          </div>
-					        </div>
-					        <div class="joblist translucent">
-					          #foreach($folderName in $folderNames)
-					          	<div class="jobfolder expand" onclick="expandFlow(this)" id="$folderName">
-					          		<span><div class="folderIcon"></div></span><p>$folderName</p>
-					          	</div>
-					          	<div id="${folderName}-panel" style="display: none">
-					          		<table id="${folderName}-table" class="jobtreetable">
-					          		</table>
-					          	</div>
-					          #end
-					        </div>
-					      </form>
-			    	   </div>
-			    	</div>
-		    	</div>
-	    	</div>
-  	   </div>
+  <h2>Scheduled Jobs</h2>
+  <table id="schedule-jobs" class="job-table">
+    <tbody>
+    <tr>
+      <th class="tb-spacer"></th>
+      <th class="tb-name">Name</th>
+      <th class="tb-next-exec">Next Execution</th>
+      <th class="tb-last-exec">Last Execution</th>
+      <th class="tb-frequency">Frequency</th>
+      <th class="tb-delete">Action</th>
+      <th class="tb-spacer"></th>
+    </tr>
+    </tbody>
+  </table>
+
+  <h2>Executing</h2>
+  #if($executing.size() == 0)
+		No jobs currently executing.
+  #end
+  <table id="executing-jobs" class="job-table">
+  </table>
   </div>
-  <div><p class="currentTime">Current Time: $utils.formatDateTimeAndZone($utils.now)</p></div>
-  <div id="modelDialog" style="display: none;" title="Info" />
+
+  <script type="text/javascript" src="${context}/static/js/azkaban-index.js"></script>
   </body>
 </html>
 

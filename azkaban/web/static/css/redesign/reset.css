@@ -1,0 +1,130 @@
+/* GLOBAL RESET */
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td {margin: 0; padding: 0; border: 0; outline: 0; font-weight: inherit; font-style: inherit; font-size: 100%; font-family: inherit; vertical-align: baseline; -webkit-text-size-adjust: 100%; }
+ol, ul {list-style: none;}
+table {border-collapse: separate; border-spacing: 0;}
+caption, th, td {text-align: left; font-weight: normal;}
+blockquote:before, blockquote:after, q:before, q:after {content: "";}
+blockquote, q {quotes: "" "";}
+input[data-ime-mode-disabled] { ime-mode: disabled !important; }
+input[type=file] { ime-mode: disabled !important; }
+
+body {
+/* remove the important after we remove the legacy css files */
+  background-color: #f0f0f0 !important;
+  color: #000 !important;
+  font-family: Arial;
+}
+
+.header {
+  border-top: 5px solid #f80700;
+  height: 80px;
+
+  background: #7d7e7d; /* Old browsers */
+  background: -moz-linear-gradient(top,  #7d7e7d 0%, #0e0e0e 100%); /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#7d7e7d), color-stop(100%,#0e0e0e)); /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top,  #7d7e7d 0%,#0e0e0e 100%); /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top,  #7d7e7d 0%,#0e0e0e 100%); /* Opera 11.10+ */
+  background: -ms-linear-gradient(top,  #7d7e7d 0%,#0e0e0e 100%); /* IE10+ */
+  background: linear-gradient(top,  #7d7e7d 0%,#0e0e0e 100%); /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#7d7e7d', endColorstr='#0e0e0e',GradientType=0 ); /* IE6-9 */
+  overflow: hidden;
+  padding: 0 4.1666667%;
+  width: 100%;
+}
+
+.header h1 {
+  float: left;
+  font-size: 162.5%;
+  font-weight: bold;  
+  margin: 21px 0;
+}
+
+.header a {
+  color: #fff;
+  text-decoration: none;
+}
+
+.header .selected {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.header .selected a {
+  border-bottom: 1px solid #f80700;
+  font-weight: bold;
+}
+
+.envir {
+  color: #8c8c8c;
+  float: left;
+  margin: 26px 9.75% 0 10px;
+}
+
+.envir {
+  font-size: 81.25%;
+}
+
+.envir-name {
+  color: #ff3000;
+  font-size: 153.85%;
+  font-weight: bold;
+}
+
+.nav {
+  float: left;
+  font-size: 87.5%;
+  overflow: hidden;
+}
+
+.nav li {
+  float: left;
+  margin-right: 5px;
+  padding: 35px 10px;
+}
+
+#wrapper {
+  margin: 0 4.1666667%;
+}
+
+.job-table {
+  border-left: 1px solid #ababab;
+  border-right: 1px solid #ababab;
+  width: 100%;
+}
+
+.job-table th {
+  background-color: #444;
+  color: #fff;
+  font-size: 81.25%;
+  font-weight: bold;
+  padding: 5px 1.25%;
+}
+
+.job-table td {
+  background-color: #fff;
+  padding: 5px 1.25%;
+  border-bottom: 1px solid #ababab;
+  border-right: 1px solid #ababab;
+}
+
+.job-table .tb-spacer {
+  border-right: none;
+  width: 3.1818182%;
+}
+
+.job-table .tb-delete {
+  border-right: none;
+  width: 7.7272727%;
+}
+
+.job-table .tb-uploaded-by {
+  border-right: none;
+  width: 10.636364%;
+}
+
+.tb-uploaded-date {
+  width: 16.363636%;
+}
+
+.jobtreetable td {
+  border-right: none;
+}

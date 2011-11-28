@@ -56,7 +56,9 @@ public class FlowExecutionServlet extends AbstractAzkabanServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
             IOException {
-        resp.setContentType("application/xhtml+xml");
+        /* set runtime properties from request and response */
+        super.setRuntimeProperties(req, resp);
+
         Page page = newPage(req, resp, "azkaban/web/pages/flow_instance.vm");
         final FlowManager allFlows = this.getApplication().getAllFlows();
      
