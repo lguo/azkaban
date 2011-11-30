@@ -1,66 +1,45 @@
-#macro(execing_job $desc)
-  <li>
-    <a class="job-name" href="${context}/job?id=${desc.name}&logs" title="${desc.name}">
-      $desc.name
-    </a>
-    #if($desc.hasChildren())
-      <ul>
-        #foreach($subjob in $desc.children)
-          #execing_job($subjob)
-        #end
-      </ul>
-    #end
-  </li>
-#end
-
-#macro(formatPeriod $period)
-  #if($utils.isNull($period))
-    none
-  #else
-    $utils.formatPeriod($period)
-  #end
-#end
-
 #parse( "azkaban/web/pages/header.vm" )
-    
-    <link rel="stylesheet" type="text/css" href="${context}/static/css/azkaban-common.css"/>
-    <link rel="stylesheet" type="text/css" href="${context}/static/css/azkaban-charts.css"/>
-    <link rel="stylesheet" type="text/css" href="${context}/static/css/azkaban-history.css"/>
-    <link rel="stylesheet" type="text/css" href="${context}/static/js/jqueryui/themes/custom-theme/jquery-ui.custom.css"></link>
-    
-    <script type="text/javascript" src="${context}/static/js/jquery/jquery.js"></script>
-    <script type="text/javascript" src="${context}/static/js/jquery/jquery.jstree.js"></script>
-    <script type="text/javascript" src="${context}/static/js/jquery/jquery.cookie.js"></script>
-    <script type="text/javascript" src="${context}/static/js/jquery/jquery.tools.min.js"></script>
-    <script type="text/javascript" src="${context}/static/js/jqueryui/jquery.ui.datepicker.min.js"></script>
-    <script type="text/javascript" src="${context}/static/js/jquery-treeview/jquery.treeview.js"></script>
-    <script type="text/javascript" src="${context}/static/js/jqueryui/jquery-ui.custom.min.js"></script>
-    <script type="text/javascript" src="${context}/static/js/azkaban-api.js"></script>
-    <script type="text/javascript" src="${context}/static/js/azkaban-charts.js"></script>
-    <script type="text/javascript" src="${context}/static/js/azkaban-history.js"></script>
-    <script type="text/javascript" src="${context}/static/js/azkaban-exectable.js"></script>
-    <script type="text/javascript" src="${context}/static/js/azkaban-index.js"></script>
-    <script type="text/javascript">
-		var contextURL = "${context}";
-		var execution = ${jsonExecution};
-      	var currentTime = ${currentTime};
-      	var timezone = "${timezone}";
-    </script>
-    <script>
-	  $(function() {
-		$(".scheduled_date").datepicker({dateFormat: 'mm-dd-yy'});
-		$("#ui-datepicker-div").css("display", "none");
-		$("#tabs").tabs({ cookie: { expires: 30 } });
-	  });
-	</script>
 
-</head>
-<body>
+  </head>
+  <body>
   #parse( "azkaban/web/pages/nav.vm" )
 
   <div id="wrapper">
-  <h2>All Jobs</h2>
   <form id="runSubmit" method="post" action="${context}/">
+
+        <!--div>
+					Run immediately
+					(<input name="include_deps" id="withdep" type="checkbox" checked /> with dependencies)
+					<input type="submit" name="run_now" value="Run"/>
+					<input id="submitType" type="hidden" />
+				</div-->
+
+					          <!--div>
+					            <input type="hidden" name="action" value="schedule"/>
+					            Schedule to run at 
+					            <input name="hour" type="text" size="2" value="12"/> :
+					            <input name="minutes" type="text" size="2" value="00"/>
+					            <select name="am_pm">
+					              <option>pm</option>
+					              <option>am</option>
+					            </select>
+					            $utils.shortTimeZone
+					            on
+					            <input class="scheduled_date" type="text" name="date" size="10" value="$utils.formatDate($utils.now())"/>
+					            and 
+					            <input name="is_recurring" type="checkbox" checked  />
+					            repeat every
+					            <input name="period" type="text" size="2" value="1"/>
+					            <select name="period_units">
+					              <option value="d">Days</option>
+					              <option value="h">Hours</option>
+					              <option value="m">Minutes</option>
+					              <option value="s">Seconds</option>
+					            </select>
+					            <input type="submit" name="schedule" value="Schedule"/>
+					          </div-->
+
+
   <table id="all-jobs" class="job-table">
     <tbody>
     <tr>
@@ -75,7 +54,9 @@
     <tr>
       <td class="tb-spacer"></td>
       <td class="tb-name">
-        <div onclick="expandFlow(this)" id="$folderName">$folderName
+        <div class="jobfolder expand" onclick="expandFlow(this)" id="$folderName">
+          <span class="state-icon"></span>
+          $folderName
         </div>
 				<div id="${folderName}-panel" style="display: none">
 					<table id="${folderName}-table" class="jobtreetable">
@@ -85,7 +66,7 @@
       <td class="tb-uploaded-date"></td>
       <td class="tb-uploaded-by"></td>
       <td class="tb-delete">
-        <button>Delete</button>
+        <input type="submit" name="$folderName" value="Delete" />
       </td>
       <td class="tb-spacer"></td>
     </tr>
@@ -93,31 +74,35 @@
     </tbody>
   </table>
   </form>
-
-  <h2>Scheduled Jobs</h2>
-  <table id="schedule-jobs" class="job-table">
-    <tbody>
-    <tr>
-      <th class="tb-spacer"></th>
-      <th class="tb-name">Name</th>
-      <th class="tb-next-exec">Next Execution</th>
-      <th class="tb-last-exec">Last Execution</th>
-      <th class="tb-frequency">Frequency</th>
-      <th class="tb-delete">Action</th>
-      <th class="tb-spacer"></th>
-    </tr>
-    </tbody>
-  </table>
-
-  <h2>Executing</h2>
-  #if($executing.size() == 0)
-		No jobs currently executing.
-  #end
-  <table id="executing-jobs" class="job-table">
-  </table>
   </div>
+  
+    <script type="text/javascript" src="${context}/static/js/jquery/jquery.js"></script>
+    <script type="text/javascript" src="${context}/static/js/jquery/jquery.jstree.js"></script>
+    <script type="text/javascript" src="${context}/static/js/jquery/jquery.cookie.js"></script>
+    <script type="text/javascript" src="${context}/static/js/jquery/jquery.tools.min.js"></script>
+    <script type="text/javascript" src="${context}/static/js/jqueryui/jquery.ui.datepicker.min.js"></script>
+    <script type="text/javascript" src="${context}/static/js/jquery-treeview/jquery.treeview.js"></script>
+    <script type="text/javascript" src="${context}/static/js/jqueryui/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" src="${context}/static/js/azkaban-api.js"></script>
+    <script type="text/javascript" src="${context}/static/js/azkaban-charts.js"></script>
+    <script type="text/javascript" src="${context}/static/js/azkaban-history.js"></script>
+    <script type="text/javascript" src="${context}/static/js/azkaban-exectable.js"></script>
+    <script type="text/javascript" src="${context}/static/js/azkaban-index.js"></script>
+    <script type="text/javascript" src="${context}/static/js/azkaban-new.js"></script>
+    <script type="text/javascript">
+		var contextURL = "${context}";
+		var execution = ${jsonExecution};
+      	var currentTime = ${currentTime};
+      	var timezone = "${timezone}";
+    </script>
+    <script>
+	  $(function() {
+		$(".scheduled_date").datepicker({dateFormat: 'mm-dd-yy'});
+		$("#ui-datepicker-div").css("display", "none");
+		$("#tabs").tabs({ cookie: { expires: 30 } });
+	  });
+	</script>
 
-  <script type="text/javascript" src="${context}/static/js/azkaban-index.js"></script>
   </body>
 </html>
 

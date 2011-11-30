@@ -128,3 +128,58 @@ body {
 .jobtreetable td {
   border-right: none;
 }
+
+.state-icon {
+  background-image: url("../../js/jqueryui/themes/custom-theme/images/ui-icons_cccccc_256x240.png");
+  cursor: pointer;
+  display: block;
+  float: left;
+  height: 16px;
+  margin-right: 5px;
+  width: 16px;
+}
+
+.collapse .state-icon {
+	background-position: 0 -16px;
+}
+
+.expand .state-icon {
+	background-position: -32px -16px;
+}
+
+.wait .state-icon {
+	background-position: -64px -80px
+}
+
+.azkaban-charts,
+.azkaban-charts td {
+	width: 100%;
+}
+
+.azkaban-charts td {
+  border: none;
+  padding: 0;
+}
+
+.treeline {
+	background: url(../../images/treeview-default-line.gif) 0 0 no-repeat;
+	float: left;
+	height: 22px;
+	overflow: hidden;
+	width: 16px;
+}
+
+.treeline.last { background-position: 0 -1766px }
+
+/* old styles */
+
+.azkaban-charts .hitarea {
+	background-image: url("../../js/jqueryui/themes/custom-theme/images/ui-icons_cccccc_256x240.png");
+	background-position: 0 -16px;
+	height: 16px;
+	width: 16px;
+	cursor: pointer;
+}
+
+.azkaban-charts .expandable-hitarea { 	background-position: -32px -16px; }
+.azkaban-charts .expandable-hitarea.collapse { 	background-position: 0 -16px; }
