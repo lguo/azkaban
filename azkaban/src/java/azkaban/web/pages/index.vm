@@ -5,6 +5,7 @@
   #parse( "azkaban/web/pages/nav.vm" )
 
   <div id="wrapper">
+    <div id="messaging"></div>
   <form id="runSubmit" method="post" action="${context}/">
 
         <!--div>
@@ -51,7 +52,7 @@
       <th class="tb-spacer"></th>
     </tr>
     #foreach($folderName in $folderNames)
-    <tr>
+    <tr id="${folderName}-row">
       <td class="tb-spacer"></td>
       <td class="tb-name">
         <div class="jobfolder expand" onclick="expandFlow(this)" id="$folderName">
@@ -75,6 +76,15 @@
   </table>
   </form>
   </div>
+
+<!-- modal content -->
+		<div id='confirm'>
+			<div class='header1'><span>Confirm</span></div>
+			<div class='message'></div>
+			<div class='buttons'>
+				<a class='no simplemodal-close'>No</a><a class='yes'>Yes</a>
+			</div>
+		</div>
   
     <script type="text/javascript" src="${context}/static/js/jquery/jquery.js"></script>
     <script type="text/javascript" src="${context}/static/js/jquery/jquery.jstree.js"></script>
@@ -89,6 +99,7 @@
     <script type="text/javascript" src="${context}/static/js/azkaban-exectable.js"></script>
     <script type="text/javascript" src="${context}/static/js/azkaban-index.js"></script>
     <script type="text/javascript" src="${context}/static/js/azkaban-new.js"></script>
+    <script type="text/javascript" src="${context}/static/js/jquery.simplemodal.js"></script>
     <script type="text/javascript">
 		var contextURL = "${context}";
 		var execution = ${jsonExecution};

@@ -171,6 +171,28 @@ body {
 
 .treeline.last { background-position: 0 -1766px }
 
+#messaging {
+  color: #fff;
+  display: none;
+  font-weight: bold;
+  padding: 10px 0;
+  text-align: center;
+}
+
+#messaging.success {
+  background-color: #799123;
+  display: block;
+}
+
+#messaging.error {
+  background-color: #F80700;
+  display: block;
+}
+
+#confirm {
+  display: none;
+}
+
 /* old styles */
 
 .azkaban-charts .hitarea {
