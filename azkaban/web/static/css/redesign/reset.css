@@ -191,6 +191,7 @@ body {
 
 #confirm {
   display: none;
+  width: 500px;
 }
 
 /* old styles */
