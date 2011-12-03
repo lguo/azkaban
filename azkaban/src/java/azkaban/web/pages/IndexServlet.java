@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,6 +76,22 @@ public class IndexServlet extends AbstractAzkabanServlet {
 
         final String jobQuery = ExecutingJobUtils.getJobSearch(req);
         jobQueryRegex = jobQuery == null? null : ExecutingJobUtils.getRegex(jobQuery);
+        
+        /* delete a folder*/
+        if (hasParam(req, "action") && hasParam(req, "folder") && hasParam(req, "toCheck")) {
+            final String action = getParam(req, "action");
+            if ("delete".equals(action)) {
+                final String folder = getParam(req, "folder");
+                final String toCheck = getParam(req, "toCheck");
+                
+                final Map<String, Object> jsonMap = deleteFolder(folder, toCheck);
+                
+                resp.setContentType("application/json");
+                resp.getWriter().print(JSONUtils.toJSONString(jsonMap));
+                resp.getWriter().flush();
+                return;
+            }
+        }
         
         Page page = getPage(req, resp, jobQueryRegex);
         page.render();
@@ -150,43 +167,52 @@ public class IndexServlet extends AbstractAzkabanServlet {
             return ret;
         }
 
+    private Map<String, Object> toJson (String status, String msg) {
+        LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
+        map.put("status", status);
+        map.put("message", msg);
+        return map;
+    }
 
-    private boolean deleteFolder(HttpServletRequest req, HttpServletResponse resp,
-            String folder)
+    private Map<String, Object> deleteFolder(String folder, String toCheck)
     throws IOException, ServletException {
         
-        if (folder == null || folder.trim().length()==0) return false;
+        if (folder == null || folder.trim().length()==0) 
+            return toJson("error", "Invalid empty folder");
         
         System.out.println("to delete folder " + folder);
         
         AzkabanApplication app = getApplication();
         FlowManager flowMgr = app.getAllFlows();
         JobManager jobMgr = app.getJobManager();
+            
+        if ("true".equals(toCheck)) {
+            Set<String> containedJobs = flowMgr.getContainedJobs(folder);
+            Set<String> dependantFlows = flowMgr.getDependantFlows(containedJobs);
+            if (dependantFlows != null && dependantFlows.size()>0) {
+                StringBuffer msg = new StringBuffer("The following flows will become "
+                        + "invalid: \n");
+                for (String d: dependantFlows) {
+                    msg.append(d + "\n");
+                }
                 
-        Set<String> containedJobs = flowMgr.getContainedJobs(folder);
-        Set<String> dependantFlows = flowMgr.getDependantFlows(containedJobs);
-        boolean toDelete = (dependantFlows == null || dependantFlows.size()==0);
-        if (!toDelete) {
-            /** TODO:  show warning message **/
-            toDelete = true;
-        }
-
-        if (toDelete) {
-            try {
-                jobMgr.deleteFolder(folder);
+                msg.append("Do you want to proceed?");
+                return toJson("confirm", msg.toString());
             }
-            catch (IOException e) {
-                System.err.println("Error in deleting folder: " + folder);
-                // don't need to reload flow manager when delete fails
-                toDelete = false;
-            }
-        }
-
-        if (toDelete) {
-            flowMgr.reload();
         }
         
-        return toDelete;
+        try {
+            jobMgr.deleteFolder(folder);
+        }
+        catch (IOException e) {
+            return toJson(
+                    "error",
+                    "Error in deleting folder " + folder + "\n"
+                    + e.getLocalizedMessage());
+        }
+        
+        flowMgr.reload();
+        return toJson("success", "delete was successful");
     }
             
     @Override
@@ -205,6 +231,7 @@ public class IndexServlet extends AbstractAzkabanServlet {
         	resp.getWriter().flush();
         	return;
         }
+        /*
         else if ("delete".equals(action) && hasParam(req, "folder")){
              String folder = getParam(req, "folder");
              boolean deleted = deleteFolder(req, resp, folder);
@@ -213,7 +240,7 @@ public class IndexServlet extends AbstractAzkabanServlet {
                  page.render();
              }
              return;
-        }
+        } */
         else if("unschedule".equals(action)) {
             String jobid = getParam(req, "job");
             app.getScheduleManager().removeScheduledJob(jobid);

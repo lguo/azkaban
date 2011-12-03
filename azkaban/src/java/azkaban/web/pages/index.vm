@@ -1,183 +1,21 @@
+#parse( "azkaban/web/pages/header.vm" )
 
-#macro(execing_job $desc)
-  <li>
-    <a class="job-name" href="${context}/job?id=${desc.name}&logs" title="${desc.name}">
-      $desc.name
-    </a>
-    #if($desc.hasChildren())
-      <ul>
-        #foreach($subjob in $desc.children)
-          #execing_job($subjob)
-        #end
-      </ul>
-    #end
-  </li>
-#end
-
-#macro(formatPeriod $period)
-  #if($utils.isNull($period))
-    none
-  #else
-    $utils.formatPeriod($period)
-  #end
-#end
-
-<!DOCTYPE html
-PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <title>#appname()</title>
-    
-    <link rel="stylesheet" type="text/css" href="${context}/static/css/azkaban-common.css"/>
-    <link rel="stylesheet" type="text/css" href="${context}/static/css/azkaban-charts.css"/>
-    <link rel="stylesheet" type="text/css" href="${context}/static/css/azkaban-history.css"/>
-    <link rel="stylesheet" type="text/css" href="${context}/static/js/jqueryui/themes/custom-theme/jquery-ui.custom.css"></link>
-    
-    <script type="text/javascript" src="${context}/static/js/jquery/jquery.js"></script>
-    <script type="text/javascript" src="${context}/static/js/jquery/jquery.jstree.js"></script>
-    <script type="text/javascript" src="${context}/static/js/jquery/jquery.cookie.js"></script>
-    <script type="text/javascript" src="${context}/static/js/jquery/jquery.tools.min.js"></script>
-    <script type="text/javascript" src="${context}/static/js/jqueryui/jquery.ui.datepicker.min.js"></script>
-    <script type="text/javascript" src="${context}/static/js/jquery-treeview/jquery.treeview.js"></script>
-    <script type="text/javascript" src="${context}/static/js/jqueryui/jquery-ui.custom.min.js"></script>
-    <script type="text/javascript" src="${context}/static/js/azkaban-api.js"></script>
-    <script type="text/javascript" src="${context}/static/js/azkaban-charts.js"></script>
-    <script type="text/javascript" src="${context}/static/js/azkaban-history.js"></script>
-    <script type="text/javascript" src="${context}/static/js/azkaban-exectable.js"></script>
-    <script type="text/javascript" src="${context}/static/js/azkaban-index.js"></script>
-    <script type="text/javascript">
-		var contextURL = "${context}";
-		var execution = ${jsonExecution};
-      	var currentTime = ${currentTime};
-      	var timezone = "${timezone}";
-    </script>
-    <script>
-	  $(function() {
-		$(".scheduled_date").datepicker({dateFormat: 'mm-dd-yy'});
-		$("#ui-datepicker-div").css("display", "none");
-		$("#tabs").tabs({ cookie: { expires: 30 } });
-	  });
-	</script>
-    
   </head>
   <body>
-  #appnamebox()    
+  #parse( "azkaban/web/pages/nav.vm" )
 
-  <div id="main">
-        <h2 class="title" >Home</h2>
-  	    <div id="variableWidth">
-  	        #messages()
-  	        <div id="tabs">
-  	          	<ul>
-  	          		<li><a href="#executing-tab">Executing</a></li><li>
-					<li><a href="#schedule-tab">Schedule</a></li>
-					<li><a href="#job-tab">Jobs</a></li>
-				</ul>
+  <div id="wrapper">
+    <div id="messaging"></div>
+  <form id="runSubmit" method="post" action="${context}/">
 
-		  	   <div id="executing-tab">
-		  	       <div class="box">
-		       		<h3>Executing Jobs</h3>
-                       <form method="get">
-                           <input type="hidden" name="action" value="search" />
-                           <input type="text" name="job" />
-                           <input type="submit" value="Search" />
-                       </form>
-					      <table id="execTable" class="jobtable execing-jobs-table translucent">
-					        <colgroup>
-			  		          	<col class="execid"/>
-			  		          	<col class="titlecol"/>
-			  		          	<col class="datetime"/>
-			  		          	<col class="duration"/>
-			   		          	<col class="action"/>
-			  		        </colgroup>
-					        <tr>
-					          <th>Id</th>
-					          <th>Name</th>
-					          <th>Start Time</th>
-					          <th>Period</th>
-					          <th>Action</th>
-					        </tr>
-					      </table>
-					    #if($executing.size() == 0)
-					      No jobs currently executing.
-					    #end
-		  	       </div>
-		  	   </div>
-		  	   <div id="schedule-tab">
-		  	       <div class="box">
-		  	       	    <h3>Scheduled Jobs</h3>
-		  	       	    <form method="get">
-                           <input type="hidden" name="action" value="search" />
-                           <input type="text" name="job" />
-                           <input type="submit" value="Search" />
-                        </form>
-		       	        #if($scheduled.size() > 0)
-					      <table class="jobtable translucent">
-					        <tr>
-					          <th>Name</th>
-					          <th>Last Execution</th>
-					          <th>Next Execution</th>
-					          <th>Period</th>
-					          <th></th>
-					        </tr>
-					        #foreach($sched in $scheduled)
-					          <tr>
-					            <td>
-					              <a class="job-name" href="${context}/job?id=${sched.id}&logs">$sched.id</a>
-					            </td>
-					            #if($sched.hasLastExecution)
-					                <td>$utils.formatDateTimeAndZone($sched.lastExecution)</td>
-					            #else
-					                <td>N/A</td>
-					            #end
-					            <td>$utils.formatDateTimeAndZone($sched.scheduledExecution)</td>
-					            <td>
-					              #formatPeriod($sched.period)
-					            </td>
-					            <td>
-					              <form action="${context}/" method="post" style="display: inline">
-					                <input type="hidden" name="action" value="unschedule"/>
-					                <input type="hidden" name="job" value="${sched.id}"/>     
-					                <input type="submit" value="Remove" />      
-					              </form>
-					            </td>
-					          </tr>
-					        #end
-					      </table>
-					    #else
-					      No scheduled jobs at this time.
-					    #end
-		  	       </div>
-		  	   </div>
-		  	   
-		  	   <div id="job-tab">
-		  	       <div class="box">
-			  	       <h3>All Jobs</h3>
-			  	       <form method="get">
-                           <input type="hidden" name="action" value="search" />
-                           <input type="text" name="job" />
-                           <input type="submit" value="Search" />
-                       </form>
-                       <!--
-                       <form method="get">
-                           <input type="hidden" name="action" value="delete" />
-                           <input type="text" name="folder" />
-                           <input type="submit" value="Delete" />
-                       </form>
-                        -->
-			  	       
-			    	   <div class="all-jobs">
-			    	        <form id="runSubmit" method="post" action="${context}/">
-					        <div class="sched-form">
-					          <div>
-					            Run immediately
-					              (<input name="include_deps" id="withdep" type="checkbox" checked /> with dependencies)
-					              <input type="submit" name="run_now" value="Run"/>
-					              <input id="submitType" type="hidden" />
-					          </div>
-					          <hr>
-					          <div>
+        <!--div>
+					Run immediately
+					(<input name="include_deps" id="withdep" type="checkbox" checked /> with dependencies)
+					<input type="submit" name="run_now" value="Run"/>
+					<input id="submitType" type="hidden" />
+				</div-->
+
+		<!--div>
 					            <input type="hidden" name="action" value="schedule"/>
 					            Schedule to run at 
 					            <input name="hour" type="text" size="2" value="12"/> :
@@ -200,35 +38,82 @@ PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 					              <option value="s">Seconds</option>
 					            </select>
 					            <input type="submit" name="schedule" value="Schedule"/>
-					          </div>
-					        </div>
-					        <div class="joblist translucent">
-					          #foreach($folderName in $folderNames)
-					          	<div class="jobfolder expand" onclick="expandFlow(this)" id="$folderName">
-					          		<span><div class="folderIcon"></div></span><p>$folderName</p>
-                                </div>
-                                <div 
-					          		<form method="post">
-					          		    <input type="hidden" name="action" value="delete" />
-					          		    <input type="hidden" name="folder" value="$folderName" />
-					          		    <input type="submit" value="Delete" />
-					          		</form>
-					          	</div>	
-					          	<div id="${folderName}-panel" style="display: none">
-					          		<table id="${folderName}-table" class="jobtreetable">
-					          		</table>
-					          	</div>
-					          #end
-					        </div>
-					      </form>
-			    	   </div>
-			    	</div>
-		    	</div>
-	    	</div>
-  	   </div>
+				          </div-->
+
+
+  <table id="all-jobs" class="job-table">
+    <tbody>
+    <tr>
+      <th class="tb-spacer"></th>
+      <th class="tb-name">Name</th>
+      <th class="tb-uploaded-date">Date Uploaded</th>
+      <th class="tb-uploaded-by">Uploaded By</th>
+      <th class="tb-delete"></th>
+      <th class="tb-spacer"></th>
+    </tr>
+    #foreach($folderName in $folderNames)
+    <tr id="${folderName}-row">
+      <td class="tb-spacer"></td>
+      <td class="tb-name">
+        <div class="jobfolder expand" onclick="expandFlow(this)" id="$folderName">
+          <span class="state-icon"></span>
+          $folderName
+        </div>
+				<div id="${folderName}-panel" style="display: none">
+					<table id="${folderName}-table" class="jobtreetable">
+					</table>
+				</div>
+      </td>
+      <td class="tb-uploaded-date"></td>
+      <td class="tb-uploaded-by"></td>
+      <td class="tb-delete">
+        <input type="submit" name="$folderName" value="Delete" />
+      </td>
+      <td class="tb-spacer"></td>
+    </tr>
+    #end
+    </tbody>
+  </table>
+  </form>
   </div>
-  <div><p class="currentTime">Current Time: $utils.formatDateTimeAndZone($utils.now)</p></div>
-  <div id="modelDialog" style="display: none;" title="Info" />
+
+<!-- modal content -->
+		<div id='confirm'>
+			<div class='header1'><span>Confirm</span></div>
+			<div class='message'></div>
+			<div class='buttons'>
+				<a class='no simplemodal-close'>No</a><a class='yes'>Yes</a>
+			</div>
+		</div>
+  
+    <script type="text/javascript" src="${context}/static/js/jquery/jquery.js"></script>
+    <script type="text/javascript" src="${context}/static/js/jquery/jquery.jstree.js"></script>
+    <script type="text/javascript" src="${context}/static/js/jquery/jquery.cookie.js"></script>
+    <script type="text/javascript" src="${context}/static/js/jquery/jquery.tools.min.js"></script>
+    <script type="text/javascript" src="${context}/static/js/jqueryui/jquery.ui.datepicker.min.js"></script>
+    <script type="text/javascript" src="${context}/static/js/jquery-treeview/jquery.treeview.js"></script>
+    <script type="text/javascript" src="${context}/static/js/jqueryui/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" src="${context}/static/js/azkaban-api.js"></script>
+    <script type="text/javascript" src="${context}/static/js/azkaban-charts.js"></script>
+    <script type="text/javascript" src="${context}/static/js/azkaban-history.js"></script>
+    <script type="text/javascript" src="${context}/static/js/azkaban-exectable.js"></script>
+    <script type="text/javascript" src="${context}/static/js/azkaban-index.js"></script>
+    <script type="text/javascript" src="${context}/static/js/azkaban-new.js"></script>
+    <script type="text/javascript" src="${context}/static/js/jquery.simplemodal.js"></script>
+    <script type="text/javascript">
+		var contextURL = "${context}";
+		var execution = ${jsonExecution};
+      	var currentTime = ${currentTime};
+      	var timezone = "${timezone}";
+    </script>
+    <script>
+	  $(function() {
+		$(".scheduled_date").datepicker({dateFormat: 'mm-dd-yy'});
+		$("#ui-datepicker-div").css("display", "none");
+		$("#tabs").tabs({ cookie: { expires: 30 } });
+	  });
+	</script>
+
   </body>
 </html>
 

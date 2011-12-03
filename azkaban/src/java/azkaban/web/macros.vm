@@ -10,7 +10,6 @@
 		<div id="navmenu">
 			<ul>
 				<li><a href="${context}/">Home</a></li>
-				<li><a href="$!context/job">Create Job</a></li>
 				<li><a href="$!context/job-upload">Upload Job</a></li>	
 				<li><a href="$!context/history">History</a></li>
 				<li><a href="$!context/fs">HDFS</a></li>
