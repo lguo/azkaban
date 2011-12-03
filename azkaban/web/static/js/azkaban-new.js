@@ -32,7 +32,7 @@ function handleDelete(e) {
             $.ajax({
                 url: action + "&toCheck=false",
                 success: function(data) {
-                    var obj = jQuery.parseJSON(data);
+                    var obj = data;
                     if ( obj.status === 'success' ) {
                         addMessage('#messaging', obj.message, "success");
                         // remove the node from the dom

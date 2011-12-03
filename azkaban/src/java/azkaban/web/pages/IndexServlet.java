@@ -191,9 +191,9 @@ public class IndexServlet extends AbstractAzkabanServlet {
             Set<String> dependantFlows = flowMgr.getDependantFlows(containedJobs);
             if (dependantFlows != null && dependantFlows.size()>0) {
                 StringBuffer msg = new StringBuffer("The following flows will become "
-                        + "invalid: \n");
+                        + "invalid: <br>");
                 for (String d: dependantFlows) {
-                    msg.append(d + "\n");
+                    msg.append(d + "<br>");
                 }
                 
                 msg.append("Do you want to proceed?");
