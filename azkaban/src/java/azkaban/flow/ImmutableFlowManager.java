@@ -195,13 +195,7 @@ public class ImmutableFlowManager implements FlowManager
 	}
 
     @Override
-    public Set<String> getContainedJobs(String folder) {
-        throw new UnsupportedOperationException();
-    }
-
-
-    @Override
-    public Set<String> getDependantFlows(Set<String> jobs) {
+    public Map<String, String> getDependantFlows(String folder) {
         throw new UnsupportedOperationException();
     }
 

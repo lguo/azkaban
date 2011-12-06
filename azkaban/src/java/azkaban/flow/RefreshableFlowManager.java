@@ -125,51 +125,6 @@ public class RefreshableFlowManager implements FlowManager
         reloadInternal(null);
     }
 
-    private final String getJobPath(String in) {
-        String jobPath = in;
-        if (jobPath.contains("/")) {
-            String[] split = jobPath.split("/");
-            if (split[0].isEmpty()) {
-                jobPath = split[1];
-            }
-            else {
-                jobPath = split[0];
-            }
-        }
-        else {
-            jobPath = "default";
-        }
-        return jobPath;
-    }
-    
-
-    public Set<String> getContainedJobs(String folder) {
-        
-        Set<String> ret = new HashSet<String>();
-        
-        List<String> rootNames = getRootNamesByFolder(folder);
-        if (rootNames == null) return ret;
-        
-        LinkedList<JobDescriptor> queue = new LinkedList<JobDescriptor>(); 
-        
-        for (String jobName : rootNames) {
-            JobDescriptor jobDesc = jobManager.getJobDescriptor(jobName);
-            queue.clear();
-            queue.addAll(jobDesc.getDependencies());
-            while (!queue.isEmpty()) {
-                JobDescriptor job = queue.pollFirst();
-                String jobPath = getJobPath(job.getPath());
-                if (jobPath.equals(folder)) {
-                    ret.add(job.getId());
-                }
-                
-                queue.addAll(job.getDependencies());
-            }
-            
-        }
-        
-        return ret;
-    }
 
     private final void reloadInternal(Long lastId) throws IOException
     {
@@ -187,12 +142,13 @@ public class RefreshableFlowManager implements FlowManager
                 rootFlows.add(rootDescriptor.getId());
 
                 // For folder path additions
-                String jobPath = getJobPath(rootDescriptor.getPath());
+                String folder = rootDescriptor.getFolder(); 
 
-                List<String> root = folderToRoot.get(jobPath);
+                //System.out.println("add folder:" + jobPath + "\tjob:" + rootDescriptor.getId());
+                List<String> root = folderToRoot.get(folder);
                 if (root == null) {
                 	root = new ArrayList<String>();
-                	folderToRoot.put(jobPath, root);
+                	folderToRoot.put(folder, root);
                 }
                 root.add(rootDescriptor.getId());
             }
@@ -225,31 +181,33 @@ public class RefreshableFlowManager implements FlowManager
 	}
 
     @Override
-    public Set<String> getDependantFlows(Set<String> toDel) {
-        Set<String> rootFlows = this.getRootFlowNames();
-        Set<String> ret = new HashSet<String>();
+    public Map<String, String> getDependantFlows(String folder) {
+        
+        Set<String> rootFlows = getRootFlowNames();
+        Map<String, String> ret = new HashMap<String, String>();
         
         LinkedList<JobDescriptor> queue = new LinkedList<JobDescriptor>();
         
         for (String rootFlow: rootFlows) {
-            //ignore flows already in the input job set
-            if (toDel.contains(rootFlow)) continue;
-            
             JobDescriptor descriptor = jobManager.getJobDescriptor(rootFlow);
-            queue.clear();
-            queue.add(descriptor);
+            final String jobFolder = descriptor.getFolder();
             
-            while (!queue.isEmpty()) {
-                JobDescriptor top = queue.pollFirst();
-
-                Set<JobDescriptor> dependents = top.getDependencies();
-                for (JobDescriptor dependent: dependents) {
-                    if (toDel.contains(dependent.getId())) {
-                        ret.add(top.getId());
-                    }
-                    else {
-                        queue.add(dependent);
-                    }
+            // ignore root jobs already in the folder
+            if (folder.equals(jobFolder)) continue;
+            queue.add(descriptor);
+        }
+        
+        while (!queue.isEmpty()) {
+            JobDescriptor top = queue.pollFirst();
+            
+            Set<JobDescriptor> dependents = top.getDependencies();
+            for (JobDescriptor dependent: dependents) {
+                // ignore jobs in the folder
+                if (folder.equals(dependent.getFolder())) {
+                    ret.put(top.getId(), top.getFolder());
+                }
+                else {
+                    queue.add(dependent);
                 }
             }
             

@@ -76,6 +76,8 @@ public class JobDescriptor {
 
     private Boolean _valid = null;
     
+    private final String _folder;
+    
     public JobDescriptor(String id, String conicalPath, String fullpath, Props props, ClassLoader classLoader) {
         this._id = id;
         this._path = conicalPath;
@@ -109,8 +111,14 @@ public class JobDescriptor {
         Collections.sort(this._writeResourceLocks);
 
         this._emailList = props.getStringList(NOTIFY_EMAIL);
+        
+        this._folder = getJobPath(_path);
     }
 
+    public String getFolder() {
+        return _folder;
+    }
+    
     public Boolean isValid() {
         return _valid;
     }
@@ -176,6 +184,24 @@ public class JobDescriptor {
         );
     }
 
+    static public final String getJobPath(String in) {
+        String jobPath = in;
+        if (jobPath.contains("/")) {
+            String[] split = jobPath.split("/");
+            if (split[0].isEmpty()) {
+                jobPath = split[1];
+            }
+            else {
+                jobPath = split[0];
+            }
+        }
+        else {
+            jobPath = "default";
+        }
+        return jobPath;
+    }
+
+    
     public ClassLoader getClassLoader() {
         return this._classLoader;
     }

@@ -187,16 +187,16 @@ public class IndexServlet extends AbstractAzkabanServlet {
         JobManager jobMgr = app.getJobManager();
             
         if ("true".equals(toCheck)) {
-            Set<String> containedJobs = flowMgr.getContainedJobs(folder);
-            Set<String> dependantFlows = flowMgr.getDependantFlows(containedJobs);
+            Map<String, String> dependantFlows = flowMgr.getDependantFlows(folder);
+
             if (dependantFlows != null && dependantFlows.size()>0) {
                 StringBuffer msg = new StringBuffer("The following flows will become "
-                        + "invalid: <br>");
-                for (String d: dependantFlows) {
-                    msg.append(d + "<br>");
+                        + "invalid: <br> <br>");
+                for (Map.Entry<String, String> entry: dependantFlows.entrySet()) {
+                    msg.append(entry.getKey() + " in " + entry.getValue() + "<br>");
                 }
                 
-                msg.append("Do you want to proceed?");
+                msg.append("<br>Do you want to proceed?");
                 return toJson("confirm", msg.toString());
             }
         }

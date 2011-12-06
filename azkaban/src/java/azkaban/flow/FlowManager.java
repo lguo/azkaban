@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -138,19 +139,11 @@ public interface FlowManager extends Iterable<Flow>
     void reload() throws IOException;
 
     /**
-     * Get all jobs contained in a folder
-     * 
-     * @param folder
-     * @return
-     */
-    Set<String> getContainedJobs(String folder);
-
-    /**
      * Get all flows dependent on jobs in the input set
      * 
      * @param jobs
      * @return
      */
-    Set<String> getDependantFlows(Set<String> jobs);
+    Map<String, String> getDependantFlows(String folder);
 
 }

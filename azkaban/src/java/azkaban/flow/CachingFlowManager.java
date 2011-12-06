@@ -191,13 +191,8 @@ public class CachingFlowManager implements FlowManager
 	}
 
     @Override
-    public Set<String> getContainedJobs(String folder) {
-        return baseManager.getContainedJobs(folder);
-    }
-    
-    @Override
-    public Set<String> getDependantFlows(Set<String> jobs) {
-        return baseManager.getDependantFlows(jobs);
+    public Map<String, String> getDependantFlows(String folder) {
+        return baseManager.getDependantFlows(folder);
     }
 
 }
