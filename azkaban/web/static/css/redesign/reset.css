@@ -176,9 +176,10 @@ body {
 	background: url(../../images/treeview-default-line.gif) 0 0 no-repeat;
 	float: left;
 	height: 22px;
+  width: 16px;
 }
 
-.treeline.last { background-position: 0 -1754px }
+.treeline.last { background-position: 0 -1766px }
 
 #messaging {
   color: #fff;
