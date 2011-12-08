@@ -3,9 +3,20 @@
   </head>
   <body>
   #parse( "azkaban/web/pages/nav.vm" )
-
+  
   <div id="wrapper">
     <div id="messaging"></div>
+    <div class="action-bar">
+      <h2>All Jobs</h2>
+      
+      <form method="get">
+        <input type="hidden" name="action" value="search">
+        <input type="submit" value="Search" class="search-btn">
+        <input type="text" placeholder="by job name or wildcard" value="" class="search-input" name="job">
+      </form>
+
+      <a class="upload-job" href="#">Upload Job</a>
+    </div>
   <form id="runSubmit" method="post" action="${context}/">
 
         <!--div>
@@ -52,7 +63,7 @@
       <th class="tb-spacer"></th>
     </tr>
     #foreach($folderName in $folderNames)
-    <tr id="${folderName}-row">
+    <tr id="${folderName}-row" class="row">
       <td class="tb-spacer"></td>
       <td class="tb-name">
         <div class="jobfolder expand" onclick="expandFlow(this)" id="$folderName">
@@ -67,7 +78,7 @@
       <td class="tb-uploaded-date"></td>
       <td class="tb-uploaded-by"></td>
       <td class="tb-delete">
-        <input type="submit" name="$folderName" value="Delete" />
+        <a name="$folderName" class="delete">Delete</a>
       </td>
       <td class="tb-spacer"></td>
     </tr>

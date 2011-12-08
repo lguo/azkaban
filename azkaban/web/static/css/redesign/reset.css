@@ -12,7 +12,7 @@ body {
 /* remove the important after we remove the legacy css files */
   background-color: #f0f0f0 !important;
   color: #000 !important;
-  font-family: Arial;
+  font-family: Arial,Helvetica,"Nimbus Sans L",sans-serif;
 }
 
 .header {
@@ -33,15 +33,22 @@ body {
 }
 
 .header h1 {
+  background: url(../../images/logo.png) top left no-repeat;
   float: left;
   font-size: 162.5%;
   font-weight: bold;  
-  margin: 21px 0;
+  margin: 14px 0;
+  padding: 7px 0 7px 50px;
 }
 
 .header a {
   color: #fff;
   text-decoration: none;
+}
+
+.header li:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
 
 .header .selected {
@@ -77,8 +84,7 @@ body {
 
 .nav li {
   float: left;
-  margin-right: 5px;
-  padding: 35px 10px;
+  padding: 35px 15px;
 }
 
 #wrapper {
@@ -101,9 +107,14 @@ body {
 
 .job-table td {
   background-color: #fff;
+  font-size: 14px;
   padding: 5px 1.25%;
   border-bottom: 1px solid #ababab;
   border-right: 1px solid #ababab;
+}
+
+.job-table tr:hover td {
+  background-color: #F3FFFF;
 }
 
 .job-table .tb-spacer {
@@ -165,8 +176,6 @@ body {
 	background: url(../../images/treeview-default-line.gif) 0 0 no-repeat;
 	float: left;
 	height: 22px;
-	overflow: hidden;
-	width: 16px;
 }
 
 .treeline.last { background-position: 0 -1766px }
@@ -194,12 +203,99 @@ body {
   width: 500px;
 }
 
+.action-bar {
+  background-color: #E0E0E0;
+  overflow: hidden;
+  padding: 27px 2.3636364%;
+}
+
+.action-bar h2 {
+  float: left;
+  font-weight: bold;
+}
+
+.delete {
+  background: -moz-linear-gradient(center top , white 0pt, #ECECEC 100%) repeat scroll 0 0 transparent;
+  border-color: #ccc;
+  color: #585858;
+  display: inline-block;
+  border-radius: 3px 3px 3px 3px;
+  border-style: solid;
+  border-width: 1px;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1.35;
+  margin: 0;
+  overflow: visible;
+  padding: 3px 10px 2px;
+  text-decoration: none;
+  vertical-align: top;
+  width: auto;
+}
+
+.upload-job {
+  background: -moz-linear-gradient(center top , #AFD47B 0pt, #AFD47B 1px, #8BC03F 1px, #69A219 100%) repeat scroll 0 0 transparent;
+  border-color: #669933;
+  border-radius: 3px 3px 3px 3px;
+  border-style: solid;
+  border-width: 1px;
+  color: #fff;
+  font-weight: bold;
+  float: right;
+  font-size: 12px;
+  line-height: 1.35;
+  margin-right: 25px;
+  padding: 3px 10px 2px;
+  text-decoration: none;
+}
+
+.search-input {
+  border: 1px solid;
+  border-color: #7C7C7C #C3C3C3 #DDDDDD;
+  float: right;
+  height: 16px;
+  line-height: 12px;
+  padding: 4px 2px 0;
+  width: 310px;
+}
+
+.search-btn {
+  background: url(http://static01.linkedin.com/scds/common/u/img/sprite/sprite_global_v6.png) repeat-x scroll 0 -1130px #DCDCDC;
+  border: 1px solid #999;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+  border-left: none;
+  color: #666;
+  float: right;
+  font-weight: bold;
+  height: 22px;
+}
+
+.joblist {
+  margin-left: 10px;
+}
+
+.joblist a {
+  color: #006699;
+  padding-left: 15px;
+}
+
+.joblist .job-name {
+  color: #666;
+  text-decoration: none;
+}
+
+.joblist .hidden {
+  display: none;
+}
+
 /* old styles */
 
 .azkaban-charts .hitarea {
 	background-image: url("../../js/jqueryui/themes/custom-theme/images/ui-icons_cccccc_256x240.png");
 	background-position: 0 -16px;
 	height: 16px;
+  margin-left: 15px;
 	width: 16px;
 	cursor: pointer;
 }

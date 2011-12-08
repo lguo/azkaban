@@ -36,6 +36,7 @@ function getList(data) {
 	var li = document.createElement("li");
 	li['jobname'] = jobName;
 	// Setup checkbox
+/*
 	var input = document.createElement("input"); 
 	input.setAttribute("id", jobName + "-checkbox");
 	input.setAttribute("type", "checkbox");
@@ -43,6 +44,7 @@ function getList(data) {
 	input.setAttribute("value", jobName);
 	input.setAttribute("class", "sched-tree-checkbox");
 	li.appendChild(input);
+*/
 	
 	// Setup anchor
 	var a = document.createElement("a");
@@ -128,7 +130,8 @@ var createTreeRow = function(data) {
 	var div = document.createElement("div");
 	div['jobname'] = jobName;
 	$(div).addClass("joblist");
-	
+
+/*	
 	// Setup checkbox
 	var input = document.createElement("input"); 
 	input.setAttribute("id", jobName + "-checkbox");
@@ -137,6 +140,7 @@ var createTreeRow = function(data) {
 	input.setAttribute("value", jobName);
 	input.setAttribute("class", "sched-tree-checkbox");
 	div.appendChild(input);
+*/
 	
 	// Setup anchor
 	var a = document.createElement("a");

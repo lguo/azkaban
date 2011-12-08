@@ -6,9 +6,9 @@
     </div>
     <ul class="nav">
       <li class="selected"><a href="${context}/">All Jobs</a></li>
-      <li><a href="#schedule-tab">Schedule</a></li>
+      <li><a href="#schedule-tab">Scheduled</a></li>
       <li><a href="$!context/history">Executing</a></li>
-      <li><a href="$!context/history">Completed</a></li>
+      <li><a href="$!context/history">History</a></li>
       <li><a href="$!context/fs">HDFS</a></li>
     </ul>
   </div>

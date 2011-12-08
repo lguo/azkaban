@@ -1,7 +1,7 @@
 jQuery(function ($) {
 
   // listen for click on the delete button
-  $("input").click(function (e) {
+  $(".delete").click(function (e) {
     // don't let the form submit we're going to use AJAX
     e.preventDefault();
     handleDelete(e);
