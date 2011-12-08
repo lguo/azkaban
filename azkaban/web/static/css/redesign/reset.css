@@ -178,7 +178,7 @@ body {
 	height: 22px;
 }
 
-.treeline.last { background-position: 0 -1766px }
+.treeline.last { background-position: 0 -1754px }
 
 #messaging {
   color: #fff;
@@ -277,6 +277,7 @@ body {
 }
 
 .joblist {
+  float: left;
   margin-left: 10px;
   overflow: hidden;
 }
