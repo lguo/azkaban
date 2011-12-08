@@ -93,7 +93,7 @@
 			<h3>Delete Job</h3>
 			<div class="message"></div>
 			<div class="actions">
-        <a class='confirm yes' href="#">Delete Job</a>
+        <a class='confirm yes' href="#">Continue</a>
 				<a class='no simplemodal-close cancel' href="#">Cancel</a>
 			</div>
 		</div>
