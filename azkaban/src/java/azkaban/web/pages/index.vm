@@ -59,7 +59,7 @@
       <th class="tb-name">Name</th>
       <th class="tb-uploaded-date">Date Uploaded</th>
       <th class="tb-uploaded-by">Uploaded By</th>
-      <th class="tb-delete"></th>
+      <th class="tb-delete">Actions</th>
       <th class="tb-spacer"></th>
     </tr>
     #foreach($folderName in $folderNames)
@@ -89,11 +89,12 @@
   </div>
 
 <!-- modal content -->
-		<div id='confirm'>
-			<div class='header1'><span>Confirm</span></div>
-			<div class='message'></div>
-			<div class='buttons'>
-				<a class='no simplemodal-close'>No</a><a class='yes'>Yes</a>
+		<div id="confirm">
+			<h3>Delete Job</h3>
+			<div class="message"></div>
+			<div class="actions">
+        <a class='confirm yes' href="#">Delete Job</a>
+				<a class='no simplemodal-close cancel' href="#">Cancel</a>
 			</div>
 		</div>
   

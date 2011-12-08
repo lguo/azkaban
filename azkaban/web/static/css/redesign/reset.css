@@ -198,11 +198,6 @@ body {
   display: block;
 }
 
-#confirm {
-  display: none;
-  width: 500px;
-}
-
 .action-bar {
   background-color: #E0E0E0;
   overflow: hidden;
@@ -214,6 +209,8 @@ body {
   font-weight: bold;
 }
 
+.confirm,
+.cancel,
 .delete {
   background: -moz-linear-gradient(center top , white 0pt, #ECECEC 100%) repeat scroll 0 0 transparent;
   border-color: #ccc;
@@ -231,6 +228,14 @@ body {
   text-decoration: none;
   vertical-align: top;
   width: auto;
+}
+
+.confirm {
+  background: -moz-linear-gradient(center top , #73AEC9 0pt, #73AEC9 1px, #338AB0 1px, #0571A6 100%) repeat scroll 0 0 transparent;
+  border-color: #045A8B;
+  color: #fff;
+  float: right;
+  margin-left: 10px;
 }
 
 .upload-job {
@@ -289,6 +294,40 @@ body {
   display: none;
 }
 
+#confirm {
+  background-color: #fff;
+  border: 1px solid #9c9c9c;
+  border-radius: 10px;
+  display: none;
+  overflow: hidden;
+  padding: 20px;
+  width: 560px;
+}
+
+#confirm h3 {
+  border-bottom: 1px solid #d0d0d0;
+  font-weight: bold;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+}
+
+#confirm .actions {
+/*  background-color: #f0f0f0;*/
+  margin-top: 10px;
+}
+
+#confirm .cancel {
+  float: right;
+}
+
+.modal-close {
+  color: #666;
+  font-weight: bold;
+  text-decoration: none;
+  position: absolute;
+  top: 10px;
+  right: 17px;
+}
 /* old styles */
 
 .azkaban-charts .hitarea {
