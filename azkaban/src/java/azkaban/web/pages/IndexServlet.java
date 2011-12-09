@@ -65,7 +65,7 @@ public class IndexServlet extends AbstractAzkabanServlet {
     private static final Logger logger = Logger.getLogger(IndexServlet.class.getName());
 
     private static final long serialVersionUID = 1;
-    private String jobQueryRegex = null;
+    private String jobQuery = null;
     
         @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
@@ -73,8 +73,8 @@ public class IndexServlet extends AbstractAzkabanServlet {
         /* set runtime properties from request and response */
         super.setRuntimeProperties(req, resp);
 
-        final String jobQuery = ExecutingJobUtils.getJobSearch(req);
-        jobQueryRegex = jobQuery == null? null : ExecutingJobUtils.getRegex(jobQuery);
+        jobQuery = ExecutingJobUtils.getJobSearch(req);
+        if (jobQuery != null) jobQuery = jobQuery.trim();
         
         /* delete a folder*/
         if (hasParam(req, "action") && hasParam(req, "folder") && hasParam(req, "toCheck")) {
@@ -92,7 +92,7 @@ public class IndexServlet extends AbstractAzkabanServlet {
             }
         }
         
-        Page page = getPage(req, resp, jobQueryRegex);
+        Page page = getPage(req, resp, jobQuery);
         page.render();
     }
 
@@ -136,13 +136,13 @@ public class IndexServlet extends AbstractAzkabanServlet {
 
     private Collection<ExecutingJobAndInstance> filterExecuting(
                 Collection<ExecutingJobAndInstance> executing,
-                String jobQueryRegex) {
-            if (jobQueryRegex == null) return executing;
+                String jobQuery) {
+            if (jobQuery == null || jobQuery.isEmpty()) return executing;
             
             Collection<ExecutingJobAndInstance> ret = 
                 new ArrayList<ExecutingJobAndInstance>();
             for (ExecutingJobAndInstance job: executing) {
-                if (job.getExecutableFlow().getName().matches(jobQueryRegex)) {
+                if (job.getExecutableFlow().getName().indexOf(jobQuery)>=0) {
                     ret.add(job);
                 }
             }
@@ -152,14 +152,16 @@ public class IndexServlet extends AbstractAzkabanServlet {
 
     private List<ScheduledJob> filterScheduled(FlowManager manager, 
             List<ScheduledJob> scheduled,
-            String jobQueryRegex) {
-            if (jobQueryRegex == null) return scheduled;
+            String jobQuery) {
+            if (jobQuery == null || jobQuery.isEmpty()) return scheduled;
             
             List<ScheduledJob> ret = new ArrayList<ScheduledJob>();
             for (ScheduledJob job: scheduled) {
                 final String id = job.getId();
                 final Flow flow = manager.getFlow(id);
-                if (flow.getName().matches(jobQueryRegex)) {
+                if (jobQuery == null || 
+                    jobQuery.isEmpty() ||
+                    flow.getName().indexOf(jobQuery)>=0) {
                     ret.add(job);
                 }
             }
@@ -226,7 +228,7 @@ public class IndexServlet extends AbstractAzkabanServlet {
         if ("loadjobs".equals(action)) {
         	resp.setContentType("application/json");
         	String folder = getParam(req, "folder");
-        	resp.getWriter().print(getJSONJobsForFolder(app.getAllFlows(), folder, jobQueryRegex));
+        	resp.getWriter().print(getJSONJobsForFolder(app.getAllFlows(), folder, jobQuery));
         	resp.getWriter().flush();
         	return;
         }
@@ -258,13 +260,14 @@ public class IndexServlet extends AbstractAzkabanServlet {
     }
     
 	private String getJSONJobsForFolder(FlowManager manager, String folder, 
-	        String regex) {
+	        String query) {
     	List<String> rootJobs = manager.getRootNamesByFolder(folder);
     	Collections.sort(rootJobs);
 
     	ArrayList<Object> rootJobObj = new ArrayList<Object>();
     	for (String root: rootJobs) {
-    	    if (regex == null || root.matches(regex)) {
+    	    if (query == null || query.isEmpty() || 
+    	        root.indexOf(query)>=0) {
     	       Flow flow = manager.getFlow(root);
     	       HashMap<String,Object> flowObj = getJSONDependencyTree(flow);
     	       rootJobObj.add(flowObj);
@@ -274,16 +277,16 @@ public class IndexServlet extends AbstractAzkabanServlet {
     	return JSONUtils.toJSONString(rootJobObj);
     }
     
-    private List<String> getFolders(FlowManager manager, String jobQueryRegex) {
+    private List<String> getFolders(FlowManager manager, String jobQuery) {
         
         final List<String> allFolders = manager.getFolders();
-        if (jobQueryRegex == null) return allFolders;
+        if (jobQuery == null || jobQuery.isEmpty()) return allFolders;
         
         List<String> ret = new ArrayList<String>();
         for (String folder: allFolders) {
             List<String> topJobs = manager.getRootNamesByFolder(folder);
             for (String topJob: topJobs) {
-                if (topJob.matches(jobQueryRegex)) {
+                if (topJob.indexOf(jobQuery)>=0) {
                     ret.add(folder);
                     break;
                 }
