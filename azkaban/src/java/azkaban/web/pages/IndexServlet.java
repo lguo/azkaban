@@ -200,6 +200,9 @@ public class IndexServlet extends AbstractAzkabanServlet {
                 msg.append("<br>Do you want to proceed?");
                 return toJson("confirm", msg.toString());
             }
+            else {
+                return toJson("confirm", "Do you want to delete folder " + folder +"?");
+            }
         }
         
         try {
