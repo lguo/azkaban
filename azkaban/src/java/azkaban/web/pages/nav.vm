@@ -1,13 +1,13 @@
   <div class="header">
-    <h1><a href="${context}/">Azkaban</a></h1>
-    <div class="envir">
-      <p class="envir-name">HEARTS</p>
-      <p>Esv4 Dev Cluster</p>
+    <h1 class="logo"><a href="${context}/" title="Azkaban">Azkaban</a></h1>
+    <div class="enviro">
+      <p class="enviro-name">HEARTS</p>
+      <p class="enviro-server">Esv4 Dev Cluster</p>
     </div>
-    <ul class="nav">
-      <li class="selected"><a href="${context}/">All Jobs</a></li>
-      <li><a href="#schedule-tab">Scheduled</a></li>
-      <li><a href="$!context/history">Executing</a></li>
+    <ul id="nav" class="nav">
+      <li id="all-jobs-tab" class="selected"><a href="#all">All Jobs</a></li>
+      <li id="scheduled-jobs-tab"><a href="#scheduled">Scheduled</a></li>
+      <li id="executing-jobs-tab"><a href="#executing">Executing</a></li>
       <li><a href="$!context/history">History</a></li>
       <li><a href="$!context/fs">HDFS</a></li>
     </ul>

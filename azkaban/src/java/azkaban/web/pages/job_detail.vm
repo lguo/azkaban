@@ -1,6 +1,6 @@
 #parse( "azkaban/web/pages/header.vm" )
-    <link rel="stylesheet" type="text/css" href="${context}/static/js/jqueryui/themes/custom-theme/jquery-ui.custom.css"></link>
-    <link rel="stylesheet" type="text/css" href="${context}/static/css/azkaban-common.css"></link>
+    <!--link rel="stylesheet" type="text/css" href="${context}/static/js/jqueryui/themes/custom-theme/jquery-ui.custom.css"></link-->
+    <!--link rel="stylesheet" type="text/css" href="${context}/static/css/azkaban-common.css"></link-->
     <script type="text/javascript" src="${context}/static/js/jquery/jquery.js"></script>
     <script type="text/javascript" src="${context}/static/js/jqueryui/jquery-ui.custom.min.js"></script>
     <script type="text/javascript" src="${context}/static/js/jquery/jquery.cookie.js"></script>
@@ -69,7 +69,9 @@
          
 			var params = data;
 			
-			var table = document.getElementById("params");
+			var table = document.getElementById("job-details");
+      var tbody = document.createElement("tbody");
+
 			for (var key in params) {
 				var value = params[key];
 				var tr = document.createElement("tr");
@@ -77,67 +79,73 @@
 				var tdVal = document.createElement("td"); 
 				$(tdKey).text(key);
 				$(tdVal).text(value);
+        $(tdKey).addClass('tb-key');
+				$(tdVal).addClass('tb-value last');
 				
 				tr.appendChild(tdKey);
 				tr.appendChild(tdVal);
-				table.appendChild(tr);
+				tbody.appendChild(tr);
 			}
+      table.appendChild(tbody);
 		});
     
     </script>
+
   </head>
   <body>
-    #appnamebox()
-    <div id="main">
-        <h2 class="title" >Job Details</h2>
-  	    <div id="variableWidth">
-  	    	<div id="tabs">
-  	    		<ul>
-					<li><a href="#tabs-1">Details</a></li>
-					<li><a href="#tabs-2">Logs</a></li>
+    #parse( "azkaban/web/pages/nav.vm" )
+
+    <div class="content">
+      <div class="messaging"></div>
+      <div class="section-hd">
+        <h2>Job Details</h2>
+        <ul class="subpage-nav">
+          <li><a class="selected" href="#">Overview</a></li>
+					<li><a href="#">Logs</a></li>
+					<li class="last"><a href="#">Flow</a></li>
 				</ul>
-	  	       #messages()
-	  	       <div id="tabs-1">
-		  	       <div class="box">
-		  	       		<h3>Details</h3>
-		  	       		<div class="jobdesc">
-						    <div>
-					          <span class="h3like">Job Name:</span> $job.id
-					        </div>
-					        <div>
-					          <span class="h3like">Type:</span> $job.jobType
-					        </div>
-					        <div>
-                              <span class="h3like">Valid:</span> $valid
-                            </div>
-					        
-					        <div>
-					          <span class="h3like">Path:</span> $job.path
-					        </div>
-					        <div>
-					          <span class="h3like">Dependencies:</span> 
-					          #if($job.hasDependencies())
-					            #foreach($dep in $job.dependencies)
-					              <a class="job-name-white" href="${context}/job?id=${dep.id}">$dep.id</a>, 
-					            #end
-					          #else
-					            None
-					          #end
-					        </div>
-		  	       		</div>
-		  	       </div>
-	
-				    <div class="box">
-				        <h3>Job Properties</h3>
-				    	<table id="params" class="jobtable translucent">
-				        <tr>
-				          <th>Key</th>
-				          <th>Value</th>
-				        </tr>
-				      </table>
-				    </div>
-				
-				</div>
+        
+        <a id="run-job-with" class="btn1" href="#">Run with Dependencies</a>
+        <a id="run-job" class="btn1" href="#">Run</a>
+        <a id="edit-job" class="btn4" href="#">Edit</a>
+
+        <dl class="job-properties">
+          <dt>Name:</dt>
+          <dd>$job.id</dd>
+          <dt>Type:</dt>
+          <dd>$job.jobType</dd>
+          <dt>Valid:</dt>
+          <dd>$valid</dd>
+          <dt>Path:</dt>
+          <dd>$job.path</dd>
+          <dt>Dependencies:</dt>
+          <dd>
+            #if($job.hasDependencies())
+					    #foreach($dep in $job.dependencies)
+					      <a class="job-name-white" href="${context}/job?id=${dep.id}">$dep.id</a>, 
+					    #end
+					    #else
+					      None
+					    #end
+          </dd>
+        </dl> 
+      </div>
+      <table id="job-details" class="job-details job-table">
+      	<thead>
+      		<tr>
+      			<th class="tb-key">Key</th>
+      			<th class="tb-value last">Value</th>
+      		</tr>
+      	</thead>
+      </table>
+
+      <div class="section-ft">
+        <a id="run-job-with" class="btn1" href="#" onclick="runJob('${job.id}', true, '$context')">Run with Dependencies</a>
+        <a id="run-job" class="btn1" href="#" onclick="runJob('${job.id}', false, '$context')">Run</a>
+        <a id="edit-job" class="btn4" href="$context/job?id=${job.id}&amp;edit">Edit</a>
+      </div>
+
+    </div>
 			    
 			    <div id="tabs-2">
 					#if($successful_executions > 1)
@@ -205,15 +213,7 @@
 					      #end
 				    </div>
 			    </div>
-			    <div id="buttonbar">
-				    <div id="editbutton" class="mybutton" style="text-align: center"><a href="$context/job?id=${job.id}&amp;edit">Edit</a></div>
-				    <div id="runbutton" class="mybutton" onclick="runJob('${job.id}', false, '$context')" style="text-align: center"><a href="#">Run</a></div>
-				    <div id="rundepbutton" class="mybutton" onclick="runJob('${job.id}', true, '$context')" style="text-align: center"><a href="#">Run with Dependencies</a></div>
-  	       		</div>
-  	       </div>
-  	    </div>
-  	</div>
-  	 <div><p class="currentTime">Current Time: $utils.formatDateTimeAndZone($utils.now)</p></div>
-  	 <div id="modelDialog" style="display: none;" title="Info" />
+			    
+  	       	 
   </body>
 </html>

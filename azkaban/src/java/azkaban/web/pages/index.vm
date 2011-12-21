@@ -2,99 +2,180 @@
 
   </head>
   <body>
-  #parse( "azkaban/web/pages/nav.vm" )
+    #parse( "azkaban/web/pages/nav.vm" )
   
-  <div id="wrapper">
-    <div id="messaging"></div>
-    <div class="action-bar">
-      <h2>All Jobs</h2>
+    <div class="content">
+      <div class="messaging"></div>
+
+      <!-- All Jobs -->
+      <div id="all-jobs-content">
+
+      <div class="section-hd">
+        <h2>All Jobs</h2>
       
-      <form method="get">
-        <input type="hidden" name="action" value="search">
-        <input type="submit" value="Search" class="search-btn">
-        <input type="text" placeholder="by job name or wildcard" value="" class="search-input" name="job">
-      </form>
+        <form method="get">
+          <input type="hidden" name="action" value="search">
+          <input type="submit" value="Search" class="search-btn">
+          <input type="text" placeholder="by job name or wildcard" value="" class="search-input" name="job">
+        </form>
 
-      <a class="upload-job" href="#">Upload Job</a>
+<a class="schedule" href="#" data-job-name="foobar">Schedule</a>
+
+        <a class="btn1 upload" href="#">Upload Job</a>
+      </div><!-- end .section-hd -->
+
+      <table id="all-jobs" class="all-jobs job-table">
+      	<thead>
+      		<tr>
+      			<th class="tb-name">Name</th>
+      			<th class="tb-up-date">Date Uploaded</th>
+      			<th class="tb-owner">Uploaded by</th>
+      			<th class="tb-action last">Actions</th>
+      		</tr>
+      	</thead>
+      	<tbody>
+          #foreach($folderName in $folderNames)
+      		<tr id="${folderName}-row" class="row">
+      			<td class="tb-name">
+              <div class="jobfolder expand" onclick="expandFlow(this)" id="$folderName">
+                <span class="state-icon"></span>
+                $folderName
+              </div>
+				      <div id="${folderName}-panel" style="display: none">
+					      <table id="${folderName}-table" class="jobtreetable">
+					      </table>
+				      </div>
+            </td>
+      			<td class="tb-up-date">&nbsp;</td>
+      			<td class="tb-owner">&nbsp;</td>
+      			<td class="tb-action last"><a name="$folderName" class="btn4 delete">Delete</a></td>
+      		</tr>
+      		#end
+      	</tbody>
+      </table>
+      </div><!-- end All Jobs-->
+
+      <div id="scheduled-jobs-content">
+        <div class="section-hd">
+        <h2>Scheduled Jobs</h2>
+      
+        <form method="get">
+          <input type="hidden" name="action" value="search">
+          <input type="submit" value="Search" class="search-btn">
+          <input type="text" placeholder="by job name or wildcard" value="" class="search-input" name="job">
+        </form>
+
+        <a class="btn1 upload" href="#">Upload Job</a>
+      </div><!-- end .section-hd -->
+<!--
+                                                      <form action="${context}/" method="post" style="display: inline">
+                                                        <input type="hidden" name="action" value="unschedule"/>
+                                                        <input type="hidden" name="job" value="${sched.id}"/>
+                                                        <input type="submit" value="Remove" />
+                                                      </form>
+-->
+      #if($scheduled.size() > 0)
+      <table class="all-jobs job-table">
+      	<thead>
+      		<tr>
+      			<th class="tb-name">Name</th>
+      			<th class="tb-up-date">Next Execution</th>
+      			<th class="tb-owner">Period</th>
+      			<th class="tb-action last">Actions</th>
+      		</tr>
+      	</thead>
+      	<tbody>
+          #foreach($sched in $scheduled)
+      		<tr id="${folderName}-row" class="row">
+      			<td class="tb-name">
+              <a class="job-name" href="${context}/job?id=${sched.id}&logs">$sched.id</a>
+            </td>
+      			<td class="tb-up-date">$utils.formatDateTimeAndZone($sched.scheduledExecution)</td>
+      			<td class="tb-owner">#formatPeriod($sched.period)</td>
+      			<td class="tb-action last"><a name="$folderName" class="btn4">Remove</a></td>
+      		</tr>
+      		#end
+      	</tbody>
+      </table>
+      #else
+        <p class="no-jobs">No scheduled jobs at this time.</p>
+      #end
+
+      </div><!-- end Scheduled Jobs -->
+      <div id="executing-jobs-content">
+        executing
+      </div><!-- end Executing Jobs -->
     </div>
-  <form id="runSubmit" method="post" action="${context}/">
-
-        <!--div>
-					Run immediately
-					(<input name="include_deps" id="withdep" type="checkbox" checked /> with dependencies)
-					<input type="submit" name="run_now" value="Run"/>
-					<input id="submitType" type="hidden" />
-				</div-->
-
-		<!--div>
-					            <input type="hidden" name="action" value="schedule"/>
-					            Schedule to run at 
-					            <input name="hour" type="text" size="2" value="12"/> :
-					            <input name="minutes" type="text" size="2" value="00"/>
-					            <select name="am_pm">
-					              <option>pm</option>
-					              <option>am</option>
-					            </select>
-					            $utils.shortTimeZone
-					            on
-					            <input class="scheduled_date" type="text" name="date" size="10" value="$utils.formatDate($utils.now())"/>
-					            and 
-					            <input name="is_recurring" type="checkbox" checked  />
-					            repeat every
-					            <input name="period" type="text" size="2" value="1"/>
-					            <select name="period_units">
-					              <option value="d">Days</option>
-					              <option value="h">Hours</option>
-					              <option value="m">Minutes</option>
-					              <option value="s">Seconds</option>
-					            </select>
-					            <input type="submit" name="schedule" value="Schedule"/>
-				          </div-->
-
-
-  <table id="all-jobs" class="job-table">
-    <tbody>
-    <tr>
-      <th class="tb-spacer"></th>
-      <th class="tb-name">Name</th>
-      <th class="tb-uploaded-date">Date Uploaded</th>
-      <th class="tb-uploaded-by">Uploaded By</th>
-      <th class="tb-delete">Actions</th>
-      <th class="tb-spacer"></th>
-    </tr>
-    #foreach($folderName in $folderNames)
-    <tr id="${folderName}-row" class="row">
-      <td class="tb-spacer"></td>
-      <td class="tb-name">
-        <div class="jobfolder expand" onclick="expandFlow(this)" id="$folderName">
-          <span class="state-icon"></span>
-          $folderName
-        </div>
-				<div id="${folderName}-panel" style="display: none">
-					<table id="${folderName}-table" class="jobtreetable">
-					</table>
-				</div>
-      </td>
-      <td class="tb-uploaded-date"></td>
-      <td class="tb-uploaded-by"></td>
-      <td class="tb-delete">
-        <a name="$folderName" class="delete">Delete</a>
-      </td>
-      <td class="tb-spacer"></td>
-    </tr>
-    #end
-    </tbody>
-  </table>
-  </form>
-  </div>
 
 <!-- modal content -->
-		<div id="confirm">
+    <div id="upload-job" class="modal">
+			<h3>Upload Job</h3>
+			<div class="message">
+      
+        <form enctype="multipart/form-data" method="post" action="$!context/api/jobs">
+          <fieldset>
+            <dl>
+			        <dt><label for="path">Project Name</label></dt>
+              <dd><input id="path" name="path" type="text" size="20" 
+							title="The destination path that the zip file will be uncompressed to on Azkaban. If the path already exists in Azkaban, it will be overwritten."/>
+			        </dd>
+			        <dt>Job Package Zip</dt>
+			        <dd><input id="file" name="file" class="file" type="file" onChange="changeFile()" /></dd>
+			       </dl>
+	        </fieldset>
+	      </form>
+
+      </div>
+			<div class="actions">
+        <a class="yes btn2" href="#">Deploy</a>
+				<a class="no simplemodal-close btn3" href="#">Cancel</a>
+			</div>
+		</div>
+
+		<div id="confirm-delete" class="modal">
 			<h3>Delete Job</h3>
 			<div class="message"></div>
 			<div class="actions">
-        <a class='confirm yes' href="#">Delete Job</a>
-				<a class='no simplemodal-close cancel' href="#">Cancel</a>
+        <a class="yes btn2" href="#">Delete Job</a>
+				<a class="no simplemodal-close btn3" href="#">Cancel</a>
+			</div>
+		</div>
+
+		<div id="schedule-job" class="modal">
+			<h3>Schedule Job</h3>
+			<div class="message">
+        <p id="schedule-job-name"></p>
+        <form id="schedule-job-form" method="post" action="${context}/">
+                                                    <!--input name="is_recurring" type="checkbox" checked  /-->
+          <fieldset>
+            <dl>
+			        <dt><label for="date">Date</label></dt>
+			        <dd><input class="scheduled_date" type="text" name="date" size="10" value="$utils.formatDate($utils.now())"/></dd>
+              <dt><label for="time">Time</label></dt>
+			        <dd>
+                <input name="hour" type="text" size="2" value="12"/> : <input name="minutes" type="text" size="2" value="00"/>
+                <select name="am_pm">
+                  <option>pm</option>
+                  <option>am</option>
+                </select> $utils.shortTimeZone
+              </dd>
+              <dt><label for="occurrence">Repeat every</label></dt>
+			        <dd>
+                <input name="period" type="text" size="2" value="0"/>
+                <select name="period_units">
+                  <option value="d">Days</option>
+                  <option value="h">Hours</option>
+                  <option value="m">Minutes</option>
+                  <option value="s">Seconds</option>
+                </select>
+              </dd>
+		        </dl>
+          </fieldset>
+        </form>
+      </div>
+			<div class="actions">
+        <a class="yes btn2" href="#">Schedule</a>
+				<a class="no simplemodal-close btn3" href="#">Cancel</a>
 			</div>
 		</div>
   
@@ -121,7 +202,6 @@
     <script>
 	  $(function() {
 		$(".scheduled_date").datepicker({dateFormat: 'mm-dd-yy'});
-		$("#ui-datepicker-div").css("display", "none");
 		$("#tabs").tabs({ cookie: { expires: 30 } });
 	  });
 	</script>

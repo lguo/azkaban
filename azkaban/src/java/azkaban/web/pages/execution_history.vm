@@ -3,36 +3,7 @@
       <script type="text/javascript" src="${context}/static/js/jquery.cookie.js"></script>
    	  <script type="text/javascript" src="${context}/static/js/jquery/jquery.tools.min.js"></script>
    	  <script type="text/javascript" src="${context}/static/js/azkaban-exectable.js"></script>
-   	  <script type="text/javascript" src="${context}/static/js/azkaban-history.js"></script>
-      <link rel="stylesheet" type="text/css" href="${context}/static/css/azkaban-history.css"/>
-      <link rel="stylesheet" type="text/css" href="${context}/static/css/azkaban-common.css"/>
-      
-      <style>
-	      .tableHistory {
-	        padding: 10px;
-	        width: 90%;
-	      }
-	      
-	      .historytree {
-	      	text-align: left;
-	      }
-
-			.tooltip {
-				background-color:#000;
-				border:1px solid #fff;
-				padding:10px 15px;
-				width:200px;
-				display:none;
-				color:#fff;
-				text-align:left;
-				font-size:12px;
-			
-				/* outline radius for mozilla/firefox only */
-				-moz-box-shadow:0 0 10px #000;
-				-webkit-box-shadow:0 0 10px #000;
-			}
-
-      </style>
+   	  <script type="text/javascript" src="${context}/static/js/azkaban-history.js"></script>      
       <script type="text/javascript">
       	var contextURL = "${context}";
       	var execution = ${jsonExecution};
@@ -60,7 +31,7 @@
       </script>
   </head>
   <body>
-    #appnamebox()
+    #parse( "azkaban/web/pages/nav.vm" )
     
     <div id="main">
         <h2 class="title" >History</h2>

@@ -180,6 +180,14 @@ var createTreeRow = function(data) {
 		runJob(jobName, true, contextURL, function(){window.location.reload()}, true);
 	});
 	div.appendChild(runDepButton);
+
+  var scheduleButton = document.createElement("a");
+	$(scheduleButton).text("Schedule");
+	scheduleButton.setAttribute("data-job-name", jobName);
+	scheduleButton.setAttribute("class", "schedule");
+	scheduleButton.setAttribute("href","#");
+//	$(scheduleButton).addClass("");
+	div.appendChild(scheduleButton);
 	
 	div.setAttribute("onMouseOver", "flowButtonShow(true, this.jobname)");
 	div.setAttribute("onMouseOut", "flowButtonShow(false, this.jobname)");
