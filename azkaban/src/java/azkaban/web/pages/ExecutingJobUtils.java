@@ -206,7 +206,12 @@ public class ExecutingJobUtils {
             final String action = AbstractAzkabanServlet.getParam(req, "action");
             if ("search".equals(action)) {
                 if (AbstractAzkabanServlet.hasParam(req, "job")) {
-                    return AbstractAzkabanServlet.getParam(req, "job");
+                    try {
+                        return AbstractAzkabanServlet.getParam(req, "job");
+                    }catch (ServletException e) {
+                        // allow null search
+                        return null;
+                    }
                 }
             }
         }

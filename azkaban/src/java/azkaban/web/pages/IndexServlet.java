@@ -22,37 +22,29 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
-import org.joda.time.Days;
-import org.joda.time.Hours;
-import org.joda.time.LocalDateTime;
-import org.joda.time.Minutes;
-import org.joda.time.ReadablePeriod;
-import org.joda.time.Seconds;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import azkaban.app.AzkabanApplication;
 import azkaban.app.JobDescriptor;
-import azkaban.app.JobManager;
 import azkaban.common.web.Page;
-import azkaban.flow.ExecutableFlow;
 import azkaban.flow.Flow;
 import azkaban.flow.FlowManager;
-import azkaban.jobs.JobExecutionException;
 import azkaban.jobs.JobExecutorManager.ExecutingJobAndInstance;
 import azkaban.scheduler.ScheduledJob;
 import azkaban.util.json.JSONUtils;
 import azkaban.web.AbstractAzkabanServlet;
+import azkaban.web.ProcessingUtils;
 
 /**
  * The main page
@@ -63,27 +55,28 @@ import azkaban.web.AbstractAzkabanServlet;
 public class IndexServlet extends AbstractAzkabanServlet {
     private static final DateTimeFormatter ZONE_FORMATTER = DateTimeFormat.forPattern("z");
     private static final Logger logger = Logger.getLogger(IndexServlet.class.getName());
-
+    
     private static final long serialVersionUID = 1;
     private String jobQuery = null;
     
-        @Override
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+        super.init(config);
+    }
+
+    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
             IOException {
         /* set runtime properties from request and response */
         super.setRuntimeProperties(req, resp);
 
-        jobQuery = ExecutingJobUtils.getJobSearch(req);
-        if (jobQuery != null) jobQuery = jobQuery.trim();
-        
         /* delete a folder*/
         if (hasParam(req, "action") && hasParam(req, "folder") && hasParam(req, "toCheck")) {
             final String action = getParam(req, "action");
             if ("delete".equals(action)) {
-                final String folder = getParam(req, "folder");
-                final String toCheck = getParam(req, "toCheck");
                 
-                final Map<String, Object> jsonMap = deleteFolder(folder, toCheck);
+                Map<String, Object> jsonMap = 
+                    ProcessingUtils.deleteFolder(req, resp, getApplication());
                 
                 resp.setContentType("application/json");
                 resp.getWriter().print(JSONUtils.toJSONString(jsonMap));
@@ -91,7 +84,11 @@ public class IndexServlet extends AbstractAzkabanServlet {
                 return;
             }
         }
-        
+
+        /* get search query */
+        jobQuery = ExecutingJobUtils.getJobSearch(req);
+        if (jobQuery != null) jobQuery = jobQuery.trim();
+
         Page page = getPage(req, resp, jobQuery);
         page.render();
     }
@@ -168,57 +165,7 @@ public class IndexServlet extends AbstractAzkabanServlet {
             return ret;
         }
 
-    private Map<String, Object> toJson (String status, String msg) {
-        LinkedHashMap<String, Object> map = new LinkedHashMap<String, Object>();
-        map.put("status", status);
-        map.put("message", msg);
-        return map;
-    }
 
-    private Map<String, Object> deleteFolder(String folder, String toCheck)
-    throws IOException, ServletException {
-        
-        if (folder == null || folder.trim().length()==0) 
-            return toJson("error", "Invalid empty folder");
-        
-        System.out.println("to delete folder " + folder);
-        
-        AzkabanApplication app = getApplication();
-        FlowManager flowMgr = app.getAllFlows();
-        JobManager jobMgr = app.getJobManager();
-            
-        if ("true".equals(toCheck)) {
-            Map<String, String> dependantFlows = flowMgr.getDependantFlows(folder);
-
-            if (dependantFlows != null && dependantFlows.size()>0) {
-                StringBuffer msg = new StringBuffer("The following flows will become "
-                        + "invalid: <br> <br>");
-                for (Map.Entry<String, String> entry: dependantFlows.entrySet()) {
-                    msg.append(entry.getKey() + " in " + entry.getValue() + "<br>");
-                }
-                
-                msg.append("<br>Do you want to proceed?");
-                return toJson("confirm", msg.toString());
-            }
-            else {
-                return toJson("confirm", "Do you want to delete folder " + folder +"?");
-            }
-        }
-        
-        try {
-            jobMgr.deleteFolder(folder);
-        }
-        catch (IOException e) {
-            return toJson(
-                    "error",
-                    "Error in deleting folder " + folder + "\n"
-                    + e.getLocalizedMessage());
-        }
-        
-        flowMgr.reload();
-        return toJson("success", "delete was successful");
-    }
-            
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
@@ -227,54 +174,49 @@ public class IndexServlet extends AbstractAzkabanServlet {
         super.setRuntimeProperties(req, resp);
 
         AzkabanApplication app = getApplication();
+
+        resp.setContentType("application/json");
+        Map<String, Object> jsonMap;
         String action = getParam(req, "action");
         if ("loadjobs".equals(action)) {
-        	resp.setContentType("application/json");
-        	String folder = getParam(req, "folder");
-        	resp.getWriter().print(getJSONJobsForFolder(app.getAllFlows(), folder, jobQuery));
-        	resp.getWriter().flush();
-        	return;
+            String folder = getParam(req, "folder");
+            resp.getWriter().print(getJSONJobsForFolder(app.getAllFlows(), folder, jobQuery));
+            resp.getWriter().flush();
+            return;
         }
-        /*
-        else if ("delete".equals(action) && hasParam(req, "folder")){
-             String folder = getParam(req, "folder");
-             boolean deleted = deleteFolder(req, resp, folder);
-             if (deleted) {
-                 Page page = getPage(req, resp, null);
-                 page.render();
-             }
-             return;
-        } */
         else if("unschedule".equals(action)) {
-            String jobid = getParam(req, "job");
-            app.getScheduleManager().removeScheduledJob(jobid);
+            jsonMap = ProcessingUtils.unscheduleJob(req, resp, app);
         } else if("cancel".equals(action)) {
-            cancelJob(app, req);
+            jsonMap = ProcessingUtils.cancelJob(req,resp, app);
         } else if("schedule".equals(action)) {
-            String redirect = scheduleJobs(app, req, resp);
-            if (!redirect.isEmpty()) {
-            	resp.sendRedirect(redirect);
-            	return;
-            }
-        } else {
+            jsonMap = ProcessingUtils.scheduleJobs(req, resp, app);
+        }
+        else if("upload".equals(action)) {
+            jsonMap = ProcessingUtils.upload(req, resp, app);
+        }
+        else {
             throw new ServletException("Unknown action: " + action);
         }
-        resp.sendRedirect(req.getContextPath());
+//        resp.sendRedirect(req.getContextPath());
+        resp.getWriter().print(JSONUtils.toJSONString(jsonMap));
+        resp.getWriter().flush();
+        return;
+
     }
-    
+
 	private String getJSONJobsForFolder(FlowManager manager, String folder, 
 	        String query) {
     	List<String> rootJobs = manager.getRootNamesByFolder(folder);
     	Collections.sort(rootJobs);
 
     	ArrayList<Object> rootJobObj = new ArrayList<Object>();
+    	boolean hit ;
     	for (String root: rootJobs) {
-    	    if (query == null || query.isEmpty() || 
-    	        root.indexOf(query)>=0) {
-    	       Flow flow = manager.getFlow(root);
-    	       HashMap<String,Object> flowObj = getJSONDependencyTree(flow);
-    	       rootJobObj.add(flowObj);
-    	    }
+    	    Flow flow = manager.getFlow(root);
+    	    
+    	    HashMap<String,Object> flowObj = new HashMap<String, Object>();
+    	    hit = getJSONDependencyTree(flow, query, flowObj);
+    	    if (hit) rootJobObj.add(flowObj);
     	}
     	
     	return JSONUtils.toJSONString(rootJobObj);
@@ -287,33 +229,61 @@ public class IndexServlet extends AbstractAzkabanServlet {
         
         List<String> ret = new ArrayList<String>();
         for (String folder: allFolders) {
-            List<String> topJobs = manager.getRootNamesByFolder(folder);
-            for (String topJob: topJobs) {
-                if (topJob.indexOf(jobQuery)>=0) {
+            List<String> tops = manager.getRootNamesByFolder(folder);
+            
+            for (String flowName: tops) {
+                final Flow flow = manager.getFlow(flowName);
+                if (match(flow, jobQuery)) {
                     ret.add(folder);
                     break;
                 }
             }
         }
+        
         return ret;
     }
 
-	private HashMap<String,Object> getJSONDependencyTree(Flow flow) {
-    	HashMap<String,Object> jobObject = new HashMap<String,Object>();
-    	jobObject.put("name", flow.getName());
+    private boolean match (Flow flow, String query) {
+        boolean hit = query==null || query.isEmpty() || flow.getName().indexOf(query)>=0;
+        if (hit) return true;
+        
+        if (flow.hasChildren()) {
+            for(Flow child : flow.getChildren()) {
+                if ( match(child, query)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private boolean getJSONDependencyTree(Flow flow, String query, 
+            HashMap<String,Object> jobObject) {
     	
+        jobObject.put("name", flow.getName());
+        
+        boolean childHit = false;
     	if (flow.hasChildren()) {
     		ArrayList<HashMap<String,Object>> dependencies = new ArrayList<HashMap<String,Object>>();
     		for(Flow child : flow.getChildren()) {
-    			HashMap<String, Object> childObj = getJSONDependencyTree(child);
+    			HashMap<String, Object> childObj = new HashMap<String, Object>();
+    			if (getJSONDependencyTree(child, query, childObj)) {
+    			    childHit = true;
+    			}
     			dependencies.add(childObj);
     		}
     		
     		Collections.sort(dependencies, new FlowComparator());
     		jobObject.put("children", dependencies);
     	}
-    	
-    	return jobObject;
+
+    	boolean hit = query==null || query.isEmpty() || flow.getName().indexOf(query)>=0;
+    	if (hit) {
+            jobObject.put("hit", "true");
+        }else {
+            jobObject.put("hit", "false");
+        }
+    	return hit || childHit;
     }
 
     private class FlowComparator implements Comparator<Map<String,Object>> {
@@ -327,131 +297,4 @@ public class IndexServlet extends AbstractAzkabanServlet {
     	
     }
     
-    private void cancelJob(AzkabanApplication app, HttpServletRequest req) throws ServletException {
-
-        String jobId = getParam(req, "job");
-        try {
-			app.getJobExecutorManager().cancel(jobId);
-		} catch (Exception e1) {
-			logger.error("Error cancelling job " + e1);
-		}
-        
-        Collection<ExecutingJobAndInstance> executing = app.getJobExecutorManager().getExecutingJobs();
-        for(ExecutingJobAndInstance curr: executing) {
-            ExecutableFlow flow = curr.getExecutableFlow();
-            final String flowId = flow.getId();
-            if(flowId.equals(jobId)) {
-                final String flowName = flow.getName();
-                try {
-                    if(flow.cancel()) {
-                        addMessage(req, "Cancelled " + flowName);
-                        logger.info("Job '" + flowName + "' cancelled from gui.");
-                    } else {
-                        logger.info("Couldn't cancel flow '" + flowName + "' for some reason.");
-                        addError(req, "Failed to cancel flow " + flowName + ".");
-                    }
-                } catch(Exception e) {
-                    logger.error("Exception while attempting to cancel flow '" + flowName + "'.", e);
-                    addError(req, "Failed to cancel flow " + flowName + ": " + e.getMessage());
-                }
-            }
-        }
-    }
-
-    private String scheduleJobs(AzkabanApplication app,
-                              HttpServletRequest req,
-                              HttpServletResponse resp) throws IOException, ServletException {
-        String[] jobNames = req.getParameterValues("jobs");
-        if(!hasParam(req, "jobs")) {
-            addError(req, "You must select at least one job to run.");
-            return "";
-        }
-        
-        if (hasParam(req, "flow_now")) {
-        	if (jobNames.length > 1) {
-        		addError(req, "Can only run flow instance on one job.");
-                return "";
-        	}
-        	
-        	String jobName = jobNames[0];
-            JobManager jobManager = app.getJobManager();
-            JobDescriptor descriptor = jobManager.getJobDescriptor(jobName);
-            if (descriptor == null) {
-            	addError(req, "Can only run flow instance on one job.");
-                return "";
-            }
-            else {
-            	return req.getContextPath() + "/flow?job_id=" + jobName;
-            }
-        }
-        else {
-	        for(String job: jobNames) {
-	            if(hasParam(req, "schedule")) {
-	                int hour = getIntParam(req, "hour");
-	                int minutes = getIntParam(req, "minutes");
-	                boolean isPm = getParam(req, "am_pm").equalsIgnoreCase("pm");
-	                String scheduledDate = req.getParameter("date");
-	                DateTime day = null;
-	                if(scheduledDate == null || scheduledDate.trim().length() == 0) {
-	                	day = new LocalDateTime().toDateTime();
-	                } else {
-		                try {
-		                	day = DateTimeFormat.forPattern("MM-dd-yyyy").parseDateTime(scheduledDate);
-		                } catch(IllegalArgumentException e) {
-		                	addError(req, "Invalid date: '" + scheduledDate + "'");
-		                	return "";
-		                }
-	                }
-	
-	                ReadablePeriod thePeriod = null;
-	                if(hasParam(req, "is_recurring"))
-	                    thePeriod = parsePeriod(req);
-	
-	                if(isPm && hour < 12)
-	                    hour += 12;
-	                hour %= 24;
-	
-	                app.getScheduleManager().schedule(job,
-                            day.withHourOfDay(hour)
-                            .withMinuteOfHour(minutes)
-                            .withSecondOfMinute(0),
-                         thePeriod,
-                         false);
-
-	                addMessage(req, job + " scheduled.");
-	            } else if(hasParam(req, "run_now")) {
-	                boolean ignoreDeps = !hasParam(req, "include_deps");
-	                try {
-	                	app.getJobExecutorManager().execute(job, ignoreDeps);
-	                }
-	                catch (JobExecutionException e) {
-	                	addError(req, e.getMessage());	
-	                	return "";
-	                }
-	                addMessage(req, "Running " + job);
-	            }
-	            else {
-	                addError(req, "Neither run_now nor schedule param is set.");
-	            }
-	        }
-	        return "";
-        }
-
-    }
-
-    private ReadablePeriod parsePeriod(HttpServletRequest req) throws ServletException {
-        int period = getIntParam(req, "period");
-        String periodUnits = getParam(req, "period_units");
-        if("d".equals(periodUnits))
-            return Days.days(period);
-        else if("h".equals(periodUnits))
-            return Hours.hours(period);
-        else if("m".equals(periodUnits))
-            return Minutes.minutes(period);
-        else if("s".equals(periodUnits))
-            return Seconds.seconds(period);
-        else
-            throw new ServletException("Unknown period unit: " + periodUnits);
-    }
-
 }
