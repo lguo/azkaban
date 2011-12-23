@@ -16,10 +16,16 @@ function runJob(id, withDep, contextURL, callback, modal) {
 				
 				if (data.success) {
 					$("#modelDialog").text(data.success);
+          $('.messaging').html(data.success);
+          $('.messaging').addClass('success').show();
+          $('.messaging').delay(2000).fadeOut('slow', function() {$('.messaging').removeClass('success');});
 				}
 				else {
 					title = "ERROR";
 					$("#modelDialog").text(data.error);
+          $('.messaging').html(data.error);
+          $('.messaging').addClass('error').show();
+          $('.messaging').delay(2000).fadeOut('slow', function() {$('.messaging').removeClass('error');})
 				}
 				
 				// Just take in account the null/undefined case.

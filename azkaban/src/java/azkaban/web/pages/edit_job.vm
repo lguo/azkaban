@@ -1,8 +1,5 @@
 #parse( "azkaban/web/pages/header.vm" )
-    <link rel="stylesheet" type="text/css" href="${context}/static/css/azkaban-common.css"></link>
-    <style type="text/css">
-      .jobtable td {border: none}
-    </style>
+
     <script type="text/javascript" src="${context}/static/js/jquery/jquery.js"></script>
     <script type="text/javascript">
     	var data = ${jsonData};
@@ -59,12 +56,11 @@
     </script>
   </head>
   <body>
-    #appnamebox()
-    
-    <div id="main">
-        <h2 class="title" >Edit Job</h2>
-  	    <div id="variableWidth">
-  	        #messages()
+    #parse( "azkaban/web/pages/nav.vm" )
+  
+    <div class="content">
+      <div class="messaging"></div>
+
   	       <form name="props_form" method="post" action="">
   	       <div class="box">
   	       	  <h3>Job Description</h3>

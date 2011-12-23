@@ -178,7 +178,7 @@
 				<a class="no simplemodal-close btn3" href="#">Cancel</a>
 			</div>
 		</div>
-  
+
     <script type="text/javascript" src="${context}/static/js/jquery/jquery.js"></script>
     <script type="text/javascript" src="${context}/static/js/jquery/jquery.jstree.js"></script>
     <script type="text/javascript" src="${context}/static/js/jquery/jquery.cookie.js"></script>

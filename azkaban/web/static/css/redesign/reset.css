@@ -27,7 +27,7 @@ body {
   );
   background-image: linear-gradient(bottom, rgb(56,56,56) 33%, rgb(73,73,73) 66%); 
   border-top: 5px solid #ff3601;
-  box-shadow: 0 4px 7px 1px #000;
+  box-shadow: 0 1px 4px 1px #000;
   height: 80px;
   overflow: hidden;
   position: relative;
@@ -427,6 +427,11 @@ tr:hover td {
 
 #ui-datepicker-div {
   display: none;
+}
+
+.filter_statuses {
+  float: right;
+  margin-right: 25px;
 }
 
 /* clean up */

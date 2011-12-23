@@ -32,41 +32,49 @@
   </head>
   <body>
     #parse( "azkaban/web/pages/nav.vm" )
-    
-    <div id="main">
-        <h2 class="title" >History</h2>
-  	    <div id="variableWidth">
-  	        #messages()
-  	       <div class="box">
-  	       <h3>Execution History</h3>
-             <form method="get">
-               <input type="hidden" name="action" value="search" />
-               <input type="text" name="job" />
-               <input type="submit" value="Search" />
-             </form>
-  		        <table id="execTable" class="tableHistory jobtable translucent">
-  		          <colgroup>
-  		          	<col class="execid"/>
-  		          	<col class="titlecol"/>
-  		          	<col class="datetime"/>
-  		          	<col class="datetime"/>
-  		          	<col class="duration"/>
-  		          	<col class="status"/>
-   		          	<col class="action"/>
-  		          </colgroup>
-		          <tr>
-		            <th>Id</th>
-		            <th>Name</th>
-		            <th>Started (${timezone})</th>
-		            <th>Ended (${timezone})</th>
-		            <th>Elapsed</th>
-		            <th>Status</th>
-		            <th>Action</th>
-		          </tr>
-		         </table>
-         		 #if($executions.size() == 0)
-			       No Job history.
-			     #end
+  
+    <div class="content">
+      <div class="messaging"></div>
+      <div class="section-hd">
+        <h2>History</h2>
+
+        <form method="get">
+          <input type="hidden" name="action" value="search">
+          <input type="submit" value="Search" class="search-btn">
+          <input type="text" placeholder="by job name or wildcard" value="" class="search-input" name="job">
+
+          <fieldset class="filter_statuses">
+          <label for="filter_status">Filter by</label>
+          <select name="filter_status">
+            <option value="all">All</option>
+            <option value="success">Success</option>
+            <option value="failure">Failure</option>
+            <option value="running">Running</option>
+          </select>
+          </fieldset>
+        </form>
+      </div>
+
+      #if($executions.size() == 0)
+			  <p class="no-jobs">No Job history.</p>
+      #else
+      <table id="execTable" class="job-history job-table">
+      	<thead>
+      		<tr>
+      			<th class="tb-id">Id</th>
+      			<th class="tb-job-name">Name</th>
+      			<th class="tb-start-time">Started (${timezone})</th>
+      			<th class="tb-end-time">Ended (${timezone})</th>
+            <th class="tb-id">Elapsed</th>
+      			<th class="tb-job-name">Status</th>
+      			<th class="tb-start-time">Action</th>
+      		</tr>
+      	</thead>
+      	<tbody>
+        </tbody>
+      </table>
+			#end
+    </div><!-- end content -->
 		      	 <div class="pagination">
 		          #if($begin > 0)
 		            <a href="${context}/history?begin=$utils.max(0, $utils.sub($begin, $size))&amp;size=${size}">
@@ -76,10 +84,7 @@
 		          <a href="${context}/history?begin=${utils.add($begin, $size)}&size=${size}">
 		            Next
 		          </a> 
-		        </div>
-  	       </div>
-  	    </div>
-  	</div>
+		         </div>
     <div><p class="currentTime">Current Time: $utils.formatDateTimeAndZone($utils.now)</p></div>
   </body>
 </html>
