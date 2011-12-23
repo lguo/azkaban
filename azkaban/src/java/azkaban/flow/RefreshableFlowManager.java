@@ -133,7 +133,7 @@ public class RefreshableFlowManager implements FlowManager
         Set<String> rootFlows = new TreeSet<String>();
         final Map<String, JobDescriptor> allJobDescriptors = jobManager.loadJobDescriptors();
         
-        for (JobDescriptor rootDescriptor : jobManager.getRootJobDescriptors(allJobDescriptors)) {
+        for (JobDescriptor rootDescriptor : jobManager.getLocalRootJobDescriptors(allJobDescriptors)) {
             final String id = rootDescriptor.getId();
             //System.out.println("build flow:" + id);
             if ( id != null) {

@@ -166,6 +166,26 @@ public class JobManager {
         return s;
     }
 
+    /**
+     * Get all the JobDescriptors that are not dependencies for any other job in the 
+     * same folder
+     * 
+     * @return The set of all root JobDescriptors
+     */
+    public Set<JobDescriptor> getLocalRootJobDescriptors(Map<String, JobDescriptor> jobDescriptors) {
+        Set<JobDescriptor> s = new HashSet<JobDescriptor>();
+        s.addAll(jobDescriptors.values());
+        for(JobDescriptor desc: jobDescriptors.values()) {
+            final String folder = desc.getFolder();
+            for(JobDescriptor dep: desc.getDependencies()) {
+                if (dep.getFolder().equals(folder)) {
+                    s.remove(dep);
+                }
+            }
+        }
+        return s;
+    }
+
     public List<JobExecution> loadRecentJobExecutions(int count) throws IOException {
         // load job executions for all jobs
         File logDir = new File(_logDir);
