@@ -3,9 +3,9 @@
   </head>
   <body>
     #parse( "azkaban/web/pages/nav.vm" )
-  
+
+    <div class="messaging"></div>  
     <div class="content">
-      <div class="messaging"></div>
 
       <!-- All Jobs -->
       <div id="all-jobs-content">

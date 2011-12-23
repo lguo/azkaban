@@ -35,17 +35,7 @@ function getList(data) {
 	
 	var li = document.createElement("li");
 	li['jobname'] = jobName;
-	// Setup checkbox
-/*
-	var input = document.createElement("input"); 
-	input.setAttribute("id", jobName + "-checkbox");
-	input.setAttribute("type", "checkbox");
-	input.setAttribute("name", "jobs");
-	input.setAttribute("value", jobName);
-	input.setAttribute("class", "sched-tree-checkbox");
-	li.appendChild(input);
-*/
-	
+
 	// Setup anchor
 	var a = document.createElement("a");
 	a.setAttribute("href", contextURL + "/job?id=" + jobName);
@@ -57,16 +47,12 @@ function getList(data) {
 	// Setup flow button
 	var flowButton = document.createElement("a");
 	$(flowButton).text("View Flow");
-	flowButton.setAttribute("id", jobName + "-flowbutton");
-	flowButton.setAttribute("class", "flowViewButton");
 	flowButton.setAttribute("href",contextURL + "/flow?job_id=" + jobName);
 	$(flowButton).addClass("hidden");
 	li.appendChild(flowButton);
 	
 	var runButton = document.createElement("a");
 	$(runButton).text("Run");
-	runButton.setAttribute("id", jobName + "-runbutton");
-	runButton.setAttribute("class", "flowViewButton");
 	runButton.setAttribute("href","#");
 	$(runButton).addClass("hidden");
 	$(runButton).click(function() {
@@ -76,17 +62,12 @@ function getList(data) {
 	
 	var runDepButton = document.createElement("a");
 	$(runDepButton).text("Run with Dependencies");
-	runDepButton.setAttribute("id", jobName + "-rundepbutton");
-	runDepButton.setAttribute("class", "flowViewButton");
 	runDepButton.setAttribute("href","#");
 	$(runDepButton).addClass("hidden");
 	$(runDepButton).click(function() {
 		runJob(jobName, true, contextURL, function(){window.location.reload()}, true);
 	});
 	li.appendChild(runDepButton);
-	
-	li.setAttribute("onMouseOver", "flowButtonShow(true, this.jobname)");
-	li.setAttribute("onMouseOut", "flowButtonShow(false, this.jobname)");
 	
 	if (data["dep"]) {
 		var ul = document.createElement("ul");
@@ -130,17 +111,6 @@ var createTreeRow = function(data) {
 	var div = document.createElement("div");
 	div['jobname'] = jobName;
 	$(div).addClass("joblist");
-
-/*	
-	// Setup checkbox
-	var input = document.createElement("input"); 
-	input.setAttribute("id", jobName + "-checkbox");
-	input.setAttribute("type", "checkbox");
-	input.setAttribute("name", "jobs");
-	input.setAttribute("value", jobName);
-	input.setAttribute("class", "sched-tree-checkbox");
-	div.appendChild(input);
-*/
 	
 	// Setup anchor
 	var a = document.createElement("a");
@@ -153,16 +123,12 @@ var createTreeRow = function(data) {
 	// Setup flow button
 	var flowButton = document.createElement("a");
 	$(flowButton).text("View Flow");
-	flowButton.setAttribute("id", jobName + "-flowbutton");
-	flowButton.setAttribute("class", "flowViewButton");
 	flowButton.setAttribute("href",contextURL + "/flow?job_id=" + jobName);
 	$(flowButton).addClass("hidden");
 	div.appendChild(flowButton);
 	
 	var runButton = document.createElement("a");
 	$(runButton).text("Run");
-	runButton.setAttribute("id", jobName + "-runbutton");
-	runButton.setAttribute("class", "flowViewButton");
 	runButton.setAttribute("href","#");
 	$(runButton).addClass("hidden");
 	$(runButton).click(function() {
@@ -172,8 +138,6 @@ var createTreeRow = function(data) {
 	
 	var runDepButton = document.createElement("a");
 	$(runDepButton).text("Run with Dependencies");
-	runDepButton.setAttribute("id", jobName + "-rundepbutton");
-	runDepButton.setAttribute("class", "flowViewButton");
 	runDepButton.setAttribute("href","#");
 	$(runDepButton).addClass("hidden");
 	$(runDepButton).click(function() {
@@ -184,13 +148,9 @@ var createTreeRow = function(data) {
   var scheduleButton = document.createElement("a");
 	$(scheduleButton).text("Schedule");
 	scheduleButton.setAttribute("data-job-name", jobName);
-	scheduleButton.setAttribute("class", "schedule");
-	scheduleButton.setAttribute("href","#");
-//	$(scheduleButton).addClass("");
+	scheduleButton.setAttribute("class", "hidden schedule");
+	scheduleButton.setAttribute("href","#schedule");
 	div.appendChild(scheduleButton);
-	
-	div.setAttribute("onMouseOver", "flowButtonShow(true, this.jobname)");
-	div.setAttribute("onMouseOut", "flowButtonShow(false, this.jobname)");
 	
 	return div;
 }

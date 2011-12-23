@@ -186,8 +186,12 @@ tr:hover td {
   color: #fff;
   display: none;
   font-weight: bold;
-  padding: 10px 0;
+  height: 30px;
+  margin: 2px 4.75% 0;
+  padding: 25px 0 20px;
+  position: absolute;
   text-align: center;
+  width: 90.3%;
 }
 
 .messaging.success {
@@ -432,6 +436,10 @@ tr:hover td {
 .filter_statuses {
   float: right;
   margin-right: 25px;
+}
+
+.joblist:hover a {
+  display: inline;
 }
 
 /* clean up */
