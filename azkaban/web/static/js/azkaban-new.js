@@ -2,8 +2,16 @@ jQuery(function ($) {
 
   var current_tab = 'all';
 
+  // check to see if navigating to all/scheduled/executing from another page
+  if( window.location.hash ) {
+      // we need to check to see if there is a mismatch between teh hash and the nav selected state
+      // if there is a mismatch we need to highlight the tab that matches the hash and show the correct state
+  }
+
   // navigating between all/scheduled/executing
   $("#nav a").click(function (e) {
+    // logic for when you are on the all jobs page
+    if ($("#all-jobs-content").length > 0) {
     var chunks = e.target.href.split('#');
     if ( chunks.length === 2) {
         if ( chunks[1] === current_tab ) { 
@@ -16,6 +24,7 @@ jQuery(function ($) {
           $('#' + current_tab + '-jobs-content').show();
           $('#' + current_tab + '-jobs-tab').addClass('selected');
         }
+    }
     }
   });
 
@@ -43,7 +52,8 @@ jQuery(function ($) {
 
 function addMessage(id, msg, className) {
   $(id).html(msg);
-  $(id).addClass(className);
+  $(id).addClass(className).show();
+  $(id).delay(2000).fadeOut('slow', function() {$(id).removeClass(className);});
 }
 
 function handleUpload(e) {
@@ -103,8 +113,8 @@ function handleSchedule(e) {
         period_units = $('select[name=period_units]');
 
         data = 'action=schedule' + '&date=' + date.val() + '&hour=' + hour.val() + '&minutes='
-        + minutes.val() + 'am_pm=' + am_pm.val() + '&period=' + period.val() + '&period_units='
-        + period_units.val() + '&jobs=' + selected_job;
+        + minutes.val() + '&am_pm=' + am_pm.val() + '&period=' + period.val() + '&period_units='
+        + period_units.val() + '&jobs=' + selected_job + '&is_recurring=0';
 
 				// submit the form
         $.ajax({

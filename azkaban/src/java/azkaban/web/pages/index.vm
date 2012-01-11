@@ -2,6 +2,7 @@
 
   </head>
   <body>
+    #set($current_page="all")
     #parse( "azkaban/web/pages/nav.vm" )
 
     <div class="messaging"></div>  
@@ -191,7 +192,7 @@
     <script type="text/javascript" src="${context}/static/js/azkaban-history.js"></script>
     <script type="text/javascript" src="${context}/static/js/azkaban-exectable.js"></script>
     <script type="text/javascript" src="${context}/static/js/azkaban-index.js"></script>
-    <script type="text/javascript" src="${context}/static/js/azkaban-new.js"></script>
+
     <script type="text/javascript" src="${context}/static/js/jquery.simplemodal.js"></script>
     <script type="text/javascript">
 		var contextURL = "${context}";
@@ -206,7 +207,4 @@
 	  });
 	</script>
 
-  </body>
-</html>
-
-
+#parse( "azkaban/web/pages/footer.vm" )

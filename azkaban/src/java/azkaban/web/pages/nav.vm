@@ -5,10 +5,10 @@
       <p class="enviro-server">Esv4 Dev Cluster</p>
     </div>
     <ul id="nav" class="nav">
-      <li id="all-jobs-tab" class="selected"><a href="#all">All Jobs</a></li>
-      <li id="scheduled-jobs-tab"><a href="#scheduled">Scheduled</a></li>
-      <li id="executing-jobs-tab"><a href="#executing">Executing</a></li>
-      <li><a href="$!context/history">History</a></li>
+      <li id="all-jobs-tab" #if($current_page == 'all')class="selected"#end><a href="/#all">All Jobs</a></li>
+      <li id="scheduled-jobs-tab"><a href="/#scheduled">Scheduled</a></li>
+      <li id="executing-jobs-tab"><a href="/#executing">Executing</a></li>
+      <li #if($current_page == 'history')class="selected"#end><a href="$!context/history">History</a></li>
       <li><a href="$!context/fs">HDFS</a></li>
     </ul>
   </div>

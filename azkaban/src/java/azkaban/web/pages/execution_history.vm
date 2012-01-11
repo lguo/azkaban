@@ -31,6 +31,7 @@
       </script>
   </head>
   <body>
+    #set($current_page="history")
     #parse( "azkaban/web/pages/nav.vm" )
   
     <div class="content">
@@ -86,5 +87,4 @@
 		          </a> 
 		         </div>
     <div><p class="currentTime">Current Time: $utils.formatDateTimeAndZone($utils.now)</p></div>
-  </body>
-</html>
+#parse( "azkaban/web/pages/footer.vm" )
