@@ -54,7 +54,7 @@
 
 	<servlet>
 		<servlet-name>job-upload</servlet-name>
-		<servlet-class>azkaban.web.pages.JobUploadServlet</servlet-class>
+		<servlet-class>azkaban.web.pages.IndexServlet</servlet-class>
 	</servlet>
 
 	<servlet>
